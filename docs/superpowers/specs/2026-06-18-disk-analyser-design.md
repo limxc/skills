@@ -2,6 +2,8 @@
 comet_change: disk-space-analyzer
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-19-disk-space-analyzer
+status: final
 ---
 
 # Disk Analyser Skill — 技术设计文档

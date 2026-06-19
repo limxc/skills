@@ -1,0 +1,3 @@
+- [x] 创建单元测试（test_scanner.py, test_categorizer.py, test_formatter.py）
+- [x] 创建集成测试（test_integration.py），验证命令行入口和 TOP5 大小
+- [x] 运行所有测试并确认通过

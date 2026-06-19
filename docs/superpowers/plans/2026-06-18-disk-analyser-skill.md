@@ -2,6 +2,7 @@
 change: disk-space-analyzer
 design-doc: docs/superpowers/specs/2026-06-18-disk-analyser-design.md
 base-ref: bdb578552e45b0d8a36f0afa174fde4151674acf
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 # Disk Analyser Skill 实施计划
@@ -23,6 +24,7 @@ base-ref: bdb578552e45b0d8a36f0afa174fde4151674acf
 - 跳过系统目录（Windows, Program Files, Program Files (x86), System32, $Recycle.Bin）
 - 权限不足静默跳过
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 1: 创建 skill 目录结构
@@ -61,6 +63,7 @@ git add skills/disk-analyser-skill/
 git commit -m "chore: scaffold disk-analyser-skill directory structure"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 2: 实现 scanner.py
@@ -198,6 +201,7 @@ git add skills/disk-analyser-skill/scripts/scanner.py
 git commit -m "feat: implement scanner module with recursive directory scanning"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 3: 实现 categorizer.py
@@ -286,6 +290,7 @@ git add skills/disk-analyser-skill/scripts/categorizer.py
 git commit -m "feat: implement categorizer module with path-based content classification"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 4: 实现 formatter.py
@@ -386,6 +391,7 @@ git add skills/disk-analyser-skill/scripts/formatter.py
 git commit -m "feat: implement formatter module with tree-structured report output"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 5: 实现 __main__.py（CLI 入口）
@@ -452,6 +458,7 @@ git add skills/disk-analyser-skill/scripts/__main__.py
 git commit -m "feat: implement CLI entry point orchestrating scan-categorize-format pipeline"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 6: 实现 SKILL.md
@@ -466,6 +473,7 @@ git commit -m "feat: implement CLI entry point orchestrating scan-categorize-for
 - [x] **Step 1: 编写 SKILL.md**
 
 ```markdown
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 name: disk-analyser-skill
 description: >-
@@ -475,6 +483,7 @@ description: >-
   analysis, large folders, or what's taking up space on their drives. Supports
   the /disk-space-analyzer command.
 license: MIT
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 # /disk-space-analyzer — Windows 磁盘空间分析
@@ -551,6 +560,7 @@ git add skills/disk-analyser-skill/SKILL.md
 git commit -m "feat: add SKILL.md with activation triggers and command definition"
 ```
 
+archived-with: 2026-06-19-disk-space-analyzer
 ---
 
 ### Task 7: 更新 tasks.md，勾选已完成任务
