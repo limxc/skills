@@ -1,13 +1,5 @@
 # Project Rules
 
-## Skill Output Location
-
-When using any skill-creator agent (including `/agent-skill-creator` and `/skill-creator`) to create new skills:
-
-- **All generated skills MUST be placed in the `skills/` directory** at the project root (`D:\WorkSpace\skills\skills\`)
-- Do NOT install created skills to `.agents/skills/`, `.opencode/skills/`, or any other global/project-level path
-- The `skills/` directory is the single canonical location for all custom skills in this project
-
 ## Skill Directory Structure
 
 ```
@@ -19,8 +11,22 @@ skills/<skill-name>/
 └── ...
 ```
 
+## Global Installation
+
+After a skill is created, **automatically install it globally**:
+
+1. Copy to `~\.agents\skills\<skill-name>\`
+2. If the current agent is **opencode**, also create a junction: `New-Item -ItemType Junction -Path "$env:USERPROFILE\.config\opencode\skills\<skill-name>" -Target "$env:USERPROFILE\.agents\skills\<skill-name>"`
+3. Then **ask the user** using a yes/no choice prompt, defaulting to **Yes**: "Skill created and installed globally! Would you like to copy it to the project's `skills/` directory too?"
+   3.1 If yes, copy to `skills/<skill-name>/`
+   3.2 If no, remove the project copy
+
+If the user later asks to install/move a skill to global or project, do so promptly.
+
+If a globally installed skill in `~\.agents\skills\` is modified, **automatically sync the changes** to the project's `skills/` directory (overwrite the project copy) if it exist.
+
 ## Modifying Installed Skills
 
-- **Never modify** the contents of any installed skill under `.agents/skills/` or `.opencode/skills/`
-- Installed skills must remain identical to their original source (github.com)
-- If a skill needs changes, create a new skill in `skills/` instead, or update the upstream source
+- **Never modify** the contents of any installed skill under `.agents/skills/` or `.opencode/skills/` if it was installed from an external source (e.g., `npx skills add`, git clone of a third-party repo)
+- Installed skills from external sources must remain identical to their original source (github.com)
+- Skills created locally by `skill-creator` and `agent-skill-creator` **can be modified freely**

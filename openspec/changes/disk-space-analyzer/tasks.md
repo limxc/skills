@@ -16,4 +16,4 @@
 - [x] 3.2 Verify skill directory structure and file completeness
 - [x] 3.3 Create `requirements.txt` if needed (stdlib-only, no external deps)
 - [x] 3.4 Test scripts locally against a sample directory
-- [x] 3.4 Install skill globally and verify agent can trigger it
+- [x] 3.5 Install skill globally and verify agent can trigger it

@@ -105,7 +105,9 @@ def _dir_size(path: str) -> int:
             total = 0
             for entry in entries:
                 try:
-                    if entry.is_file(follow_symlinks=False):
+                    if entry.is_dir(follow_symlinks=False):
+                        total += _dir_size(entry.path)
+                    elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except (PermissionError, OSError):
                     pass

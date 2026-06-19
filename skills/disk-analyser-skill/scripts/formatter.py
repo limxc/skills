@@ -9,7 +9,7 @@ def format_size(size: int) -> str:
     return f"{size:.2f} PB"
 
 
-def _format_node(node, depth: int = 0, is_last: bool = True, prefix: str = "", top_n: set = None) -> list:
+def _format_node(node, is_last: bool = True, prefix: str = "", top_n: set = None) -> list:
     lines = []
     connector = "\u2514\u2500\u2500 " if is_last else "\u251c\u2500\u2500 "
     indent = "    " if is_last else "\u2502   "
@@ -40,7 +40,7 @@ def _format_node(node, depth: int = 0, is_last: bool = True, prefix: str = "", t
             is_last_child = i == len(node.children) - 1
             child_prefix = prefix + indent
             lines.extend(_format_node(
-                child, depth + 1, is_last_child, child_prefix, top_n
+                child, is_last_child, child_prefix, top_n
             ))
 
     return lines

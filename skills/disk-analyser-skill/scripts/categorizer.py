@@ -45,17 +45,15 @@ _RULES = [
 ]
 
 
-def _classify_single(name: str, path: str) -> tuple:
+def _classify_single(path: str) -> tuple:
     for pattern, category, rec in _RULES:
         if pattern.search(path):
-            return category, rec
-        if pattern.search(name):
             return category, rec
     return ("unknown", Recommendation.REVIEW)
 
 
 def classify(node) -> None:
-    cat, rec = _classify_single(os.path.basename(node.path), node.path)
+    cat, rec = _classify_single(node.path)
     node.category = cat
     node.recommendation = rec
     for child in node.children:

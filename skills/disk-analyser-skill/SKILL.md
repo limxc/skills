@@ -33,7 +33,7 @@ license: MIT
 脚本位于 `scripts/` 目录下，agent 自动调用：
 
 ```
-python -m scripts.analyzer <path> [options]
+python -m scripts <path> [options]
 ```
 
 **参数：**
@@ -63,14 +63,12 @@ python -m scripts.analyzer <path> [options]
 
 ```
 Scanned: C:\Users\TestUser | Total: 85.3 GB | Duration: 3.2s
-─────────────────────────────────────────────────────────────────────────────
-  Folder                     Size      Category           Action
-  ────────────────────────────────────────────────────────────────────────────
-  ├── AppData                 32.1 GB  user-data           🔍 review
-  │   ├── Local\Temp          4.2 GB   temporary-files     ✅ safe  [TOP]
-  │   └── Local\Google\Cache  1.8 GB   browser-cache       ✅ safe
-  ├── Projects                28.5 GB  code-build          ⚠️ cautious  [TOP]
-  │   ├── node_modules        2.1 GB   dependency-cache    ✅ safe  [TOP]
-  │   └── dist                1.5 GB   code-build          ⚠️ cautious
-  └── Downloads               15.2 GB  downloads           🔍 review  [TOP]
+─────────────────────────────────────────────────
+├── AppData  32.1 GB  user-data           🔍 review-manually
+│   ├── Local\Temp  4.2 GB   temporary-files     ✅ safe-to-clean  [TOP]
+│   └── Local\Google\Cache  1.8 GB   browser-cache       ✅ safe-to-clean
+├── Projects  28.5 GB  code-build          ⚠️ cautious  [TOP]
+│   ├── node_modules  2.1 GB   dependency-cache    ✅ safe-to-clean  [TOP]
+│   └── dist  1.5 GB   code-build          ⚠️ cautious
+└── Downloads  15.2 GB  downloads           🔍 review-manually  [TOP]
 ```

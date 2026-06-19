@@ -1,0 +1,16 @@
+{
+  "change": "disk-space-analyzer",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "d70b48401bd70855c8fb43e67a869d261cfa12c16bc590b1d48fa8664c90fcfe",
+  "files": [
+    { "path": "openspec/changes/disk-space-analyzer/proposal.md", "sha256": "ddc5a1126fa181f79bed758c169d12cb68bcfe1e530e0f3b940018d22e75a0d3" },
+    { "path": "openspec/changes/disk-space-analyzer/design.md", "sha256": "62700b4e7c3c3c5668908b53c7ec2c3209e1f3e0bb7687d2ef6cc40f7aa5b8ac" },
+    { "path": "openspec/changes/disk-space-analyzer/tasks.md", "sha256": "a57b5be11dd5034d4e9ef7a8f08f0476ae386b1dd09ffb64a18183acb21f4eb9" },
+    { "path": "openspec/changes/disk-space-analyzer/specs/disk-scan/spec.md", "sha256": "20085f5f9a2be7c2f262666705a3dc20886e44196eba7fc7feab61775368efc2" },
+    { "path": "openspec/changes/disk-space-analyzer/specs/folder-categorization/spec.md", "sha256": "3af5d30524614cb743b3c7c80edb87e4faaec060a1534682c11c4473ac45cda7" },
+    { "path": "openspec/changes/disk-space-analyzer/specs/report-formatter/spec.md", "sha256": "bda619323c5bec01f5623d9c283dbfd151907c3e95dc39779bbdbbaddf477b8d" }
+  ]
+}
