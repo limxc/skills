@@ -40,21 +40,21 @@ base-ref: bdb578552e45b0d8a36f0afa174fde4151674acf
 - Consumes: (none)
 - Produces: 完整目录骨架
 
-- [ ] **Step 1: 创建目录**
+- [x] **Step 1: 创建目录**
 
 ```bash
 New-Item -ItemType Directory -Path "D:\WorkSpace\skills\skills\disk-analyser-skill\scripts" -Force
 New-Item -ItemType Directory -Path "D:\WorkSpace\skills\skills\disk-analyser-skill\references" -Force
 ```
 
-- [ ] **Step 2: 创建空的 `scripts/__init__.py`**
+- [x] **Step 2: 创建空的 `scripts/__init__.py`**
 
 ```python
 ```
 
-- [ ] **Step 3: 创建 `references/.gitkeep`**（空文件）
+- [x] **Step 3: 创建 `references/.gitkeep`**（空文件）
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/
@@ -72,7 +72,7 @@ git commit -m "chore: scaffold disk-analyser-skill directory structure"
 - Produces: `scanner.scan(root, max_depth, min_size, progress) -> FolderNode`
 - `FolderNode` 类: `FolderNode(path: str, size: int, children: list[FolderNode], skipped: list[str])`
 
-- [ ] **Step 1: 编写 scanner.py**
+- [x] **Step 1: 编写 scanner.py**
 
 ```python
 import os
@@ -191,7 +191,7 @@ def _dir_size(path: str) -> int:
         return 0
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/scripts/scanner.py
@@ -210,7 +210,7 @@ git commit -m "feat: implement scanner module with recursive directory scanning"
 - Produces: `categorizer.classify(node: FolderNode) -> None`（原地修改 node，增加 `category` 和 `recommendation` 属性）
 - `Recommendation` 枚举: `SAFE / CAUTIOUS / REVIEW`
 
-- [ ] **Step 1: 编写 categorizer.py**
+- [x] **Step 1: 编写 categorizer.py**
 
 ```python
 import re
@@ -279,7 +279,7 @@ def classify(node) -> None:
 import os  # noqa: E402 (needed for os.path.basename above, imported after re)
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/scripts/categorizer.py
@@ -298,7 +298,7 @@ git commit -m "feat: implement categorizer module with path-based content classi
 - Produces: `formatter.format_report(root: FolderNode, duration: float) -> str`
 - Produces: `formatter.format_size(size: int) -> str`
 
-- [ ] **Step 1: 编写 formatter.py**
+- [x] **Step 1: 编写 formatter.py**
 
 ```python
 import time
@@ -379,7 +379,7 @@ def _get_top_folders(node, n: int = 5) -> set:
 import os  # noqa: E402
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/scripts/formatter.py
@@ -397,7 +397,7 @@ git commit -m "feat: implement formatter module with tree-structured report outp
 - Consumes: scanner.scan, categorizer.classify, formatter.format_report
 - Produces: CLI entry point (`python -m scripts.analyzer <path>`)
 
-- [ ] **Step 1: 编写 __main__.py**
+- [x] **Step 1: 编写 __main__.py**
 
 ```python
 import argparse
@@ -445,7 +445,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/scripts/__main__.py
@@ -463,7 +463,7 @@ git commit -m "feat: implement CLI entry point orchestrating scan-categorize-for
 - Consumes: (all scripts)
 - Produces: agent skill definition with activation triggers and `/disk-space-analyzer` command
 
-- [ ] **Step 1: 编写 SKILL.md**
+- [x] **Step 1: 编写 SKILL.md**
 
 ```markdown
 ---
@@ -544,7 +544,7 @@ Scanned: C:\Users\TestUser | Total: 85.3 GB | Duration: 3.2s
 ```
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add skills/disk-analyser-skill/SKILL.md
@@ -558,7 +558,7 @@ git commit -m "feat: add SKILL.md with activation triggers and command definitio
 **Files:**
 - Modify: `openspec/changes/disk-space-analyzer/tasks.md`
 
-- [ ] **Step 1: 勾选 tasks.md 中所有已完成的任务**
+- [x] **Step 1: 勾选 tasks.md 中所有已完成的任务**
 
 ```markdown
 - [x] 1.1 Create `skills/disk-analyser-skill/` directory with SKILL.md, scripts/, references/
@@ -574,7 +574,7 @@ git commit -m "feat: add SKILL.md with activation triggers and command definitio
 - [ ] 3.5 Install skill globally and verify agent can trigger it
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add openspec/changes/disk-space-analyzer/tasks.md
