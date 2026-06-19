@@ -13,8 +13,11 @@ def _progress(path: str, size_hint: int):
 
 
 def main():
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
     ap = argparse.ArgumentParser(
-        description="Disk space analyzer \u2014 scan directories and identify large folders",
+        description="Disk space analyzer - scan directories and identify large folders",
     )
     ap.add_argument("path", help="Root directory to scan")
     ap.add_argument("--min-size", type=int, default=1_000_000_000,

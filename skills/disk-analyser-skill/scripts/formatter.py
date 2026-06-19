@@ -62,7 +62,7 @@ def format_report(root, duration: float) -> str:
     lines = [header, sep]
     for i, child in enumerate(root.children):
         is_last = i == len(root.children) - 1
-        lines.extend(_format_node(child, 0, is_last, "", top_n))
+        lines.extend(_format_node(child, is_last, "", top_n))
 
     return "\n".join(lines)
 

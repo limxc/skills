@@ -13,7 +13,7 @@ class Recommendation(Enum):
         return {
             Recommendation.SAFE: "\u2705 safe-to-clean",
             Recommendation.CAUTIOUS: "\u26a0\ufe0f cautious",
-            Recommendation.REVIEW: "\ud83d\udd0d review-manually",
+            Recommendation.REVIEW: "\U0001F50D review-manually",
         }[self]
 
 

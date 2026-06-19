@@ -1,0 +1,6 @@
+- [x] 创建 change 产物（proposal/design/tasks）
+- [x] 修复 `scanner.py`: `__slots__` 添加 `category`、`recommendation`
+- [x] 修复 `categorizer.py`: 非法代理对 `\ud83d\udd0d` → `\U0001F50D`
+- [x] 修复 `formatter.py`: 移除多余的 `0` 参数（`_format_node` 参数数量不匹配）
+- [x] 修复 `__main__.py`: 添加 stdout/stderr UTF-8 编码设置
+- [x] 运行验证确保测试通过（44/44 通过）

@@ -8,7 +8,7 @@ _SYSTEM_DIRS = frozenset({
 })
 
 class FolderNode:
-    __slots__ = ("path", "size", "children", "skipped")
+    __slots__ = ("path", "size", "children", "skipped", "category", "recommendation")
 
     def __init__(self, path: str, size: int = 0, children=None, skipped=None):
         self.path = path
