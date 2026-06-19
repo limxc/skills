@@ -19,22 +19,48 @@ npx skills add limxc/skills
   即使用户只是说「帮我分析这个复杂问题」「怎么看本质」「怎么调查研究」「抓关键」「问题很乱怎么理清楚」「当前阶段该做什么」「怎么找突破口」「怎么判断时机」「没有调查就没有发言权」也应触发。
 ```
 
-**_触发方式_**：
+****_触发方式_**：
 
 - `/mao <问题>`
+
+### **disk-analyser-skill**
+
+Windows 磁盘空间分析工具，递归扫描目录、识别大文件夹、分类用途并提供清理建议。
+
+**测试覆盖**: 44 个测试用例（单元测试 + 集成测试），验证扫描准确性、分类逻辑、TOP5 大小排序。
+
+**_触发方式_**：
+
+- `/disk-space-analyzer <路径>`
+
+### **素材积累相关 skills**
+
+- `agent-skill-creator` — 根据工作流描述创建跨平台 agent skill
 
 ## 项目结构
 
 ```
 skills/
-└── mao/
+├── mao/
+│   ├── SKILL.md
+│   └── references/
+│       └── research/
+│           ├── 01-writings.md
+│           ├── 02-conversations.md
+│           ├── 03-expression-dna.md
+│           ├── 04-external-views.md
+│           ├── 05-decisions.md
+│           └── 06-timeline.md
+└── disk-analyser-skill/
     ├── SKILL.md
-    └── references/
-        └── research/
-            ├── 01-writings.md
-            ├── 02-conversations.md
-            ├── 03-expression-dna.md
-            ├── 04-external-views.md
-            ├── 05-decisions.md
-            └── 06-timeline.md
+    └── scripts/
+        ├── scanner.py
+        ├── categorizer.py
+        ├── formatter.py
+        ├── __main__.py
+        └── tests/
+            ├── test_scanner.py
+            ├── test_categorizer.py
+            ├── test_formatter.py
+            └── test_integration.py
 ```
