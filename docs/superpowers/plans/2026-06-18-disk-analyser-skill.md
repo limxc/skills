@@ -569,9 +569,9 @@ git commit -m "feat: add SKILL.md with activation triggers and command definitio
 - [x] 2.4 Create `scripts/__init__.py` — main entry point orchestrating all modules
 - [x] 3.1 Add `/disk-space-analyzer` command definition in SKILL.md
 - [x] 3.2 Verify skill directory structure and file completeness
-- [ ] 3.3 Create `requirements.txt` if needed (stdlib-only, no external deps)
-- [ ] 3.4 Test scripts locally against a sample directory
-- [ ] 3.5 Install skill globally and verify agent can trigger it
+- [x] 3.3 Create `requirements.txt` if needed (stdlib-only, no external deps)
+- [x] 3.4 Test scripts locally against a sample directory
+- [x] 3.5 Install skill globally and verify agent can trigger it
 ```
 
 - [x] **Step 2: 提交**
