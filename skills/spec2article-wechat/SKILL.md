@@ -110,7 +110,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 - 流程变化 → 流程图？
 - 新增/重构 → 目录结构？
 
-**2.5** 写作人格确认 — 读取 wewrite `style.yaml` 的 `writing_persona`；若未设置，按以下规则推荐 2 个候选让用户选择：从 `style.yaml` 的 `personas` 列表中，按 `topic` 关键词与 changes 描述的文本相似度排序，取最高分和次高分。若无 topics 数据，默认推荐 `tech-coder` 和 `storyteller`。
+**2.5** 写作人格确认 — 读取 wewrite `style.yaml` 的 `writing_persona`；若未设置，从 `style.yaml` 的 `personas` 列表中，按 `topic` 关键词与 changes 描述的文本相似度排序，取前 3 个候选展示给用户。每个候选必须附带一段风格展示文字（从 `style.yaml` 中该 persona 的示例文本摘录），让用户直观感受写作风格。若无 topics 数据，默认推荐最常用的 3 个 persona。
 
 ## Pre-3: 素材提取 + 生图 + 确认
 
