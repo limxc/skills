@@ -14,6 +14,7 @@ npx skills add limxc/skills
 |-------|------|----------|
 | mao | 毛泽东哲学思维框架与问题分析方法，基于《矛盾论》《实践论》等核心著作 | `/mao <问题>` |
 | disk-analyser-skill | Windows 磁盘空间分析工具，递归扫描目录并分类清理建议 | `/disk-space-analyzer <路径>` |
+| wechat-article-skill | 从 Comet archive 生成微信公众号文章。读取已归档变更，经写作讨论后由 wewrite 管道完成写作/SEO/配图/排版/发布 | `/wechat-article` |
 
 ## 项目结构
 
@@ -29,16 +30,30 @@ skills/
 │           ├── 04-external-views.md
 │           ├── 05-decisions.md
 │           └── 06-timeline.md
-└── disk-analyser-skill/
+├── disk-analyser-skill/
+│   ├── SKILL.md
+│   └── scripts/
+│       ├── scanner.py
+│       ├── categorizer.py
+│       ├── formatter.py
+│       ├── __main__.py
+│       └── tests/
+│           ├── test_scanner.py
+│           ├── test_categorizer.py
+│           ├── test_formatter.py
+│           └── test_integration.py
+└── wechat-article-skill/
     ├── SKILL.md
-    └── scripts/
-        ├── scanner.py
-        ├── categorizer.py
-        ├── formatter.py
-        ├── __main__.py
-        └── tests/
-            ├── test_scanner.py
-            ├── test_categorizer.py
-            ├── test_formatter.py
-            └── test_integration.py
+    ├── AGENTS.md
+    ├── scripts/
+    │   ├── position.py
+    │   ├── diagram.py
+    │   └── publish.py
+    └── references/
+        ├── complete-flow.md
+        ├── archives-workflow.md
+        ├── writing-guide.md
+        └── wechat-publish.md
 ```
+
+> `wechat-article-skill` 的完整流程说明见 [`skills/wechat-article-skill/references/complete-flow.md`](skills/wechat-article-skill/references/complete-flow.md)
