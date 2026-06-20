@@ -30,6 +30,8 @@ metadata:
 
 Converts Comet development archives into WeChat public account articles. Three custom pre-steps (replace wewrite's Step 2-3) → wewrite's unmodified Step 4-8 → post-processing.
 
+**重要：本文所有「使用 question 工具」指令均指调用 question 工具函数，而非输出问题 JSON 文本。每次 question 调用只问一项决策，不得合并多项。**
+
 **Trigger**: `/spec2article-wechat` — select changes, write article
 
 ```
@@ -86,7 +88,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 - 写文章 → 传入后续
 - 不再显示 → `python <skill-dir>/scripts/position.py skipped <dir>`
 
-**2.2** 写作讨论（question 工具逐项确认）：
+**2.2** 写作讨论（以下 a/b/c 三项必须分开依次调用 question 工具，每次只问一项，不得合并为一次调用）：
 
 a) **标题** — 生成 3 候选，用户选或自定义
 b) **骨架** — 按以下规则自动匹配（从选中 changes 的 metadata 推断）：
