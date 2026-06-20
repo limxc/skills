@@ -135,7 +135,14 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 
 `{slug}` = change 名称的 kebab-case 英文（即 `.comet.yaml` 所在目录名）。
 
-执行：自然语言描述 → skill tool 加载 drawio-skill → 委托生成（含"高清画质，Microsoft YaHei 字体"） → 自检修复 ≤2 轮。
+执行：按以下模板构造 drawio 指令 → skill tool 加载 drawio-skill → 委托生成 → 自检修复 ≤2 轮：
+
+```markdown
+请为「{change-name}」生成一张 {预设}。
+场景：{从 design.md/proposal.md 提取 1-2 句核心要点}
+输出路径：{spec2article-wechat-output}/{change-name}-{type}.png
+要求：高清画质，Microsoft YaHei 字体，中文标注，简洁美观。
+```
 
 目录结构 → `tree`/`Get-ChildItem` → 嵌入代码块。
 
