@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-"""Position tracker for wechat-article skill.
+"""Position tracker for spec2article-wechat skill.
 
-Tracks which Comet changes have been processed for WeChat articles.
+Tracks which Comet changes have been processed or skipped for WeChat articles.
+Uses change folder names (from openspec/changes/ or openspec/changes/archive/)
+as stable identifiers — works across archive moves.
+
 Position file: <project-root>/.wechat-article-position.json
 """
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 
 
 @dataclass
 class Position:
-    last_change: Optional[str] = None
-    last_change_dir: Optional[str] = None
+    processed: list[str] = field(default_factory=list)
+    skipped: list[str] = field(default_factory=list)
     updated_at: Optional[str] = None
 
 
@@ -25,10 +29,22 @@ POSITION_FILE = ".wechat-article-position.json"
 
 
 def _find_project_root() -> Path:
-    """Walk up from cwd to find project root (has .git dir)."""
+    """Walk up from cwd to find project root.
+
+    Checks for markers: .git, .openspec.yaml, openspec/ (as dir).
+    Falls back to cwd if none found.
+    """
+    root_override = Path(os.environ.get("SPEC2ARTICLE_PROJECT_ROOT", ""))
+    if root_override.is_dir():
+        return root_override.resolve()
+
     cwd = Path.cwd().resolve()
     for parent in [cwd] + list(cwd.parents):
         if (parent / ".git").is_dir():
+            return parent
+        if (parent / ".openspec.yaml").is_file():
+            return parent
+        if (parent / "openspec").is_dir():
             return parent
     return cwd
 
@@ -39,21 +55,18 @@ def get_position_path(project_root: Optional[Path] = None) -> Path:
     return project_root / POSITION_FILE
 
 
-_OLD_KEYS = {
-    "last_archive": "last_change",
-    "last_archive_dir": "last_change_dir",
-}
-
-
 def read_position(project_root: Optional[Path] = None) -> Position:
     pos_path = get_position_path(project_root)
     if not pos_path.exists():
         return Position()
     try:
         data = json.loads(pos_path.read_text(encoding="utf-8"))
-        for old_key, new_key in _OLD_KEYS.items():
-            if old_key in data:
-                data[new_key] = data.pop(old_key)
+        # Migrate legacy single-position format
+        if "last_change_dir" in data and data["last_change_dir"]:
+            if data["last_change_dir"] not in data.get("processed", []):
+                data.setdefault("processed", []).append(data["last_change_dir"])
+            data.pop("last_change", None)
+            data.pop("last_change_dir", None)
         return Position(**data)
     except (json.JSONDecodeError, TypeError):
         return Position()
@@ -68,8 +81,22 @@ def write_position(position: Position, project_root: Optional[Path] = None) -> N
     )
 
 
-def update_position(change_name: str, change_dir: str, project_root: Optional[Path] = None) -> Position:
-    pos = Position(last_change=change_name, last_change_dir=change_dir)
+def mark_processed(dir_names: list[str], project_root: Optional[Path] = None) -> Position:
+    pos = read_position(project_root)
+    for d in dir_names:
+        if d not in pos.processed:
+            pos.processed.append(d)
+        pos.skipped = [s for s in pos.skipped if s != d]
+    write_position(pos, project_root)
+    return pos
+
+
+def mark_skipped(dir_names: list[str], project_root: Optional[Path] = None) -> Position:
+    pos = read_position(project_root)
+    for d in dir_names:
+        if d not in pos.skipped:
+            pos.skipped.append(d)
+        pos.processed = [p for p in pos.processed if p != d]
     write_position(pos, project_root)
     return pos
 
@@ -79,7 +106,7 @@ def reset_position(project_root: Optional[Path] = None) -> None:
 
 
 def find_changes(project_root: Optional[Path] = None) -> list[dict]:
-    """List all changes under openspec/changes/, sorted by name."""
+    """List all changes (active + archived), sorted by folder name."""
     if project_root is None:
         project_root = _find_project_root()
 
@@ -107,7 +134,6 @@ def find_changes(project_root: Optional[Path] = None) -> list[dict]:
             "has_tasks": tasks.exists(),
         })
 
-    # Also scan archive/ for completed changes
     archive_dir = changes_dir / "archive"
     if archive_dir.is_dir():
         for entry in sorted(archive_dir.iterdir()):
@@ -129,41 +155,36 @@ def find_changes(project_root: Optional[Path] = None) -> list[dict]:
     return changes
 
 
-def find_unprocessed_changes(project_root: Optional[Path] = None) -> list[dict]:
-    """Find changes that haven't been processed yet (after last position)."""
+def find_pending_changes(project_root: Optional[Path] = None) -> list[dict]:
+    """Find changes not yet processed or skipped."""
     pos = read_position(project_root)
     changes = find_changes(project_root)
-
     if not changes:
         return []
-
-    if pos.last_change_dir is None:
-        return changes
-
-    # Find index of last processed change
-    last_idx = -1
-    for i, c in enumerate(changes):
-        if c["dir_name"] == pos.last_change_dir:
-            last_idx = i
-            break
-
-    if last_idx < 0:
-        return changes
-
-    return changes[last_idx + 1:]
+    return [
+        c for c in changes
+        if c["dir_name"] not in pos.processed and c["dir_name"] not in pos.skipped
+    ]
 
 
 def main():
     parser = argparse.ArgumentParser(description="Comet change position tracker")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    sub.add_parser("status", help="Show current position")
+    sub.add_parser("status", help="Show current position (processed + skipped lists)")
     sub.add_parser("list", help="List all changes")
-    sub.add_parser("pending", help="List unprocessed changes")
-    sub.add_parser("reset", help="Reset position")
+    sub.add_parser("pending", help="List unprocessed + unskipped changes")
 
-    p_set = sub.add_parser("set", help="Set position to specific change")
-    p_set.add_argument("dir_name", help="Change dir name (e.g. my-feature-change)")
+    p_processed = sub.add_parser("processed", help="Mark change(s) as processed")
+    p_processed.add_argument("dir_names", nargs="+", help="Change dir name(s)")
+
+    p_skipped = sub.add_parser("skipped", help="Mark change(s) as skipped (hide from pending)")
+    p_skipped.add_argument("dir_names", nargs="+", help="Change dir name(s)")
+
+    p_unskip = sub.add_parser("unskip", help="Remove change(s) from skipped list")
+    p_unskip.add_argument("dir_names", nargs="+", help="Change dir name(s)")
+
+    sub.add_parser("reset", help="Reset position (clear all tracking)")
 
     args = parser.parse_args()
 
@@ -176,25 +197,40 @@ def main():
         if not all_changes:
             print("No changes found.")
             return
+        pos = read_position()
         for c in all_changes:
-            flag = " " if c["has_proposal"] else "!"
-            print(f"  {flag} {c['dir_name']}")
+            flag = "[P]" if c["dir_name"] in pos.processed else "[S]" if c["dir_name"] in pos.skipped else "[ ]"
+            missing = ""
+            if not c["has_proposal"]:
+                missing += "!"
+            print(f"  {flag} {c['dir_name']}{missing}")
 
     elif args.command == "pending":
-        pending = find_unprocessed_changes()
+        pending = find_pending_changes()
         if not pending:
             print("No unprocessed changes.")
             return
         for c in pending:
             print(f"  {c['dir_name']}")
 
+    elif args.command == "processed":
+        pos = mark_processed(args.dir_names)
+        print(f"Processed {len(args.dir_names)} change(s).")
+
+    elif args.command == "skipped":
+        pos = mark_skipped(args.dir_names)
+        print(f"Skipped {len(args.dir_names)} change(s).")
+
+    elif args.command == "unskip":
+        pos = read_position()
+        for d in args.dir_names:
+            pos.skipped = [s for s in pos.skipped if s != d]
+        write_position(pos)
+        print(f"Unskipped {len(args.dir_names)} change(s).")
+
     elif args.command == "reset":
         reset_position()
         print("Position reset.")
-
-    elif args.command == "set":
-        update_position(args.dir_name, args.dir_name)
-        print(f"Position set to: {args.dir_name}")
 
 
 if __name__ == "__main__":

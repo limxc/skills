@@ -2,6 +2,8 @@
 comet_change: migrate-to-drawio-skill
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-20-migrate-to-drawio-skill
+status: final
 ---
 
 # Design: drawio-skill Integration for wechat-article-skill

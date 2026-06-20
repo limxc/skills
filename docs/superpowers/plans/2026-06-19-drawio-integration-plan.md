@@ -2,6 +2,7 @@
 change: migrate-to-drawio-skill
 design-doc: docs/superpowers/specs/2026-06-19-drawio-integration-design.md
 base-ref: 46a29f68fc4b227b7c864460ac522bc00f59ee83
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 # Drawio-skill Integration for wechat-article-skill 实施计划
@@ -24,6 +25,7 @@ base-ref: 46a29f68fc4b227b7c864460ac522bc00f59ee83
 - 不修改图片嵌入/上传逻辑
 - 不修改其他绘图技能（excalidraw, mermaid, plantuml）
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ## 文件结构
@@ -37,6 +39,7 @@ base-ref: 46a29f68fc4b227b7c864460ac522bc00f59ee83
 | `skills/wechat-article-skill/install.ps1` | 修改 | 新增 drawio-skill 安装 + draw.io CLI 检测 |
 | `skills/wechat-article-skill/install.sh` | 修改 | 新增 drawio-skill 安装 + draw.io CLI 检测 |
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 1: 安装 drawio-skill 外部依赖
@@ -73,6 +76,7 @@ git add -A
 git commit -m "chore: install drawio-skill as dependency for diagram generation"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 2: 更新 SKILL.md — Pre-1 依赖检查 + 元数据
@@ -205,6 +209,7 @@ git add skills/wechat-article-skill/SKILL.md
 git commit -m "feat: update SKILL.md metadata, deps check, and image rules for drawio-skill"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 3: 更新 SKILL.md — Pre-3 生图流程和确认流程
@@ -366,6 +371,7 @@ git add skills/wechat-article-skill/SKILL.md
 git commit -m "feat: replace Pre-3 diagram generation with drawio-skill delegation"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 4: 删除旧代码
@@ -389,6 +395,7 @@ git rm skills/wechat-article-skill/scripts/diagram.py
 git commit -m "feat: remove scripts/diagram.py (replaced by drawio-skill)"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 5: 更新安装脚本
@@ -482,6 +489,7 @@ git add skills/wechat-article-skill/install.ps1 skills/wechat-article-skill/inst
 git commit -m "feat: add drawio-skill installation to install scripts"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ### Task 6: 更新文档
@@ -688,6 +696,7 @@ git add skills/wechat-article-skill/references/complete-flow.md skills/wechat-ar
 git commit -m "docs: update documentation for drawio-skill integration"
 ```
 
+archived-with: 2026-06-20-migrate-to-drawio-skill
 ---
 
 ## Self-Review

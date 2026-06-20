@@ -1,0 +1,25 @@
+# Skill: spec2article-wechat
+
+## Activation
+- `/spec2article-wechat`
+
+## Key Scripts
+- `scripts/position.py` — `status`, `pending`, `processed`, `skipped`, `unskip`, `list`, `reset`
+
+## Position Tracking
+- File: `<project-root>/.wechat-article-position.json`
+- Tracks: `processed` (used in articles) + `skipped` (user dismissed) lists
+- Commands:
+  - `python <skill>/scripts/position.py pending` — list change to process
+  - `python <skill>/scripts/position.py processed <dir>...` — mark as done
+  - `python <skill>/scripts/position.py skipped <dir>...` — mark as skip
+  - `python <skill>/scripts/position.py list` — show all with status flags
+  - `python <skill>/scripts/position.py unskip <dir>...` — restore skipped change
+- Env override: `$env:SPEC2ARTICLE_PROJECT_ROOT` — explicitly set project root path
+
+## Output Directory
+- `<project-root>/spec2article-wechat-output/` — all generated articles and assets
+
+## Dependencies
+- wewrite at `~/.agents/skills/wewrite/`
+- drawio-skill at `~/.agents/skills/drawio-skill/`
