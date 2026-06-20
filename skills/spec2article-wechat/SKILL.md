@@ -46,7 +46,11 @@ Step 9   后处理                 →   Position Updated + User Reply
 **Input**: Comet project with `openspec/changes/` or `archive/`
 **Output**: Ready env + pending change list
 
-**1.1** Comet 检查 — `$COMET_GUARD` 非空则继续；为空则输出 "Comet not found. This skill requires Comet workflow." 后退出。
+**1.1** Comet 环境检查 — 检测当前项目是否存在 Comet 工作流结构：
+```
+Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -LiteralPath "archive/"
+```
+存在则继续；不存在则输出 "Comet 项目结构未找到。请在已初始化 Comet（含 openspec/changes/ 或 archive/ 目录）的项目中运行本 skill。" 后退出。
 
 **1.2** 依赖检查 — 逐项检测，缺失项一键安装后告知用户重启：
 
@@ -130,21 +134,20 @@ c) **配图** — 遍历 changes 检查 design.md/proposal.md，逐项问：
 
 **3.3** 每张图 question 工具（单选）：A) 没问题 B) 修改（≤5 轮）C) 跳过。达 5 轮强制接受或跳过。
 
-**3.4** 草案展示与反馈调整
+**3.4** 草案展示与全文交互调整
 
-**3.4.1** 展示草案全文：将 3.1 的结构化素材与 3.3 已确认图片/代码块组合为完整文章草案，逐段 inline 展示（不写入文件），每段后标注 `[用户反馈点]`。
+**3.4.1** 展示草案全文：将 3.1 的结构化素材与 3.3 已确认图片/代码块组合为完整文章草案，inline 展示全文（不写入文件）。
 
-**3.4.2** 逐段反馈：使用 question 工具逐段询问：
-- A) 没问题，继续下一段
-- B) 需要修改（请说明修改要求）
-- C) 整体意见（可多段合并反馈）
+**3.4.2** 收集反馈：使用 question 工具收集用户对全文的整体意见：
+- 用户可对任意段落提出修改要求（内容调整、结构重组、语气变更等）
+- 也可提出全局性修改（如"整体语气太官方"、"缩短篇幅"）
 
-**3.4.3** 调整循环：收到 B 或 C 后，按用户要求修改对应段落，重新展示修改后的全文。重复 3.4.1–3.4.2 直至用户对所有段落认可。
+**3.4.3** 调整执行：按用户反馈修改对应内容。若修改涉及局部段落，仅调整指定部分；若为全局性修改，一次性应用到全文。修改完成后重新展示全文，修改部分前标注 `📝` 以提示用户。
 
 **3.4.4** 确认定稿：用户对全文认可后，使用 question 工具确认：
 > A) 确认定稿，写入文件  B) 继续修改
 
-用户选择 A 后进入 3.5。
+用户选择 A 后进入 3.5。用户选择 B 则回到 3.4.2，循环直至定稿。
 
 **3.5** 生成最终稿：`spec2article-wechat-output/article-{date}.md` — 含素材 + 已确认图片/代码块。
 
@@ -208,7 +211,7 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
-| 1 | 在非 Comet 项目中使用 | 无 changes，position.py 报错 | 仅在有 `openspec/changes/` 或 `archive/` 的项目中使用 |
+| 1 | 在非 Comet 项目中使用 | 无 changes，position.py 报错 | Pre-1.1 目录探测会自动检查并退出，不依赖环境变量 |
 | 2 | 手动编辑 `.wechat-article-position.json` | 状态不一致，跳/重写 change | 只用 `position.py` |
 | 3 | 跳过 Pre-2 配图决策 | 缺少关键配图 | 架构/流程变更至少生成一张图 |
 | 4 | 写非技术类公众号 | 素材提取不匹配 | 非技术类直接用 wewrite |
