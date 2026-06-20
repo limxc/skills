@@ -83,3 +83,14 @@ if command -v pip3 &>/dev/null; then
     pip3 install -r "$TARGET/scripts/requirements.txt" 2>/dev/null || true
   fi
 fi
+
+# Install drawio-skill dependency
+echo ""
+echo "Installing drawio-skill dependency..."
+npx skills add Agents365-ai/365-skills -g 2>/dev/null || echo "Warning: Failed to install drawio-skill. Install manually: npx skills add Agents365-ai/365-skills -g"
+
+# Check draw.io CLI
+if ! command -v drawio &>/dev/null; then
+  echo "Warning: draw.io CLI not found. Diagram generation requires draw.io Desktop CLI."
+  echo "  Download from: https://github.com/jgraph/drawio-desktop/releases"
+fi
