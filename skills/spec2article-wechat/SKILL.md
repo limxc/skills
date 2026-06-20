@@ -50,6 +50,22 @@ Step 8  wewrite 收尾
 Step 9  后处理：position + 回复
 ```
 
+## Fallback 表：异常场景处理
+
+各步骤执行中可能遇到以下异常，按三段式处理（触发条件 → 一线修复 → 仍失败兜底）：
+
+| 步骤 | 触发条件 | 一线修复 | 仍失败兜底 |
+|------|---------|---------|-----------|
+| Pre-1.2 | wewrite/drawio-skill 目录不存在 | `npx skills add ... -g` 自动安装 | 告知用户重启 agent 后重试，终止流程 |
+| Pre-1.2 | drawio CLI 不存在 | 提示下载 draw.io Desktop 并给出链接 | 告知用户跳过配图，纯文字输出 |
+| Pre-1.4 | 无未处理 changes | 展示已 processed/skipped 清单 | 建议运行 `position.py list` 或 `unskip`，终止流程 |
+| Pre-2.1 | change 目录内容不完整（缺 proposal.md） | 跳过该 change，标记为 skipped | 告知用户手动检查 change 结构，继续处理其余 change |
+| Pre-3.3 | drawio 导出失败 | 重试 1 次（简化描述重生成） | 跳过该配图，纯文字替代，在回复中标注"配图生成失败" |
+| Pre-3.4 | 图片修改达 5 轮仍不满意 | 强制接受当前版本或跳过 | 用户二选一，不得继续修改 |
+| Step 4-7 | wewrite 管道卡住（无响应 >30s） | 重新加载 wewrite SKILL.md | 提示用户手动介入或跳过发布仅保存草稿 |
+| Step 9.1 | position.py 执行失败 | 检查 `.wechat-article-position.json` 是否可写 | 告知用户手动运行命令，继续回复 |
+| 全局 | 用户中途中断流程 | 保存当前进度到 `spec2article-wechat-output/` 中间文件 | 告知用户可重新运行，已保存的素材和配图可复用 |
+
 ## Pre-1: 环境 + 配置 + 位置读取
 
 **1.1** Comet 环境检查 — Comet 是本技能的前置依赖，运行时 `$COMET_GUARD` 等变量应已就绪。若 `$COMET_GUARD` 为空，提示 "Comet not found. This skill requires Comet workflow." 后退出。
