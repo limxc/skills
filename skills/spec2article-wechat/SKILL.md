@@ -46,7 +46,8 @@ Step 4  写作
 Step 5  SEO + 验证
 Step 6  视觉 AI
 Step 7  排版 + 发布
-Step 8  收尾 + position 更新
+Step 8  wewrite 收尾
+Step 9  后处理：position + 回复
 ```
 
 ## Pre-1: 环境 + 配置 + 位置读取
@@ -101,15 +102,15 @@ if missing 非空:
 
 **2.2** 写作讨论：
 
-**2.2.1 标题讨论** — 生成 3 个候选标题，用户选择或自定义。
+a) **标题讨论** — 生成 3 个候选标题，用户选择或自定义。
 
-**2.2.2 骨架推荐** — 根据 change 类型推荐，用户确认：
+b) **骨架推荐** — 根据 change 类型推荐，用户确认：
 - SCQA（单 feature 技术叙事）
 - 时间线复盘（多 change 合写）
 - 对比（before/after 改造）
 - 清单（多个独立功能点）
 
-**2.2.3 配图决策** — 遍历选中 changes，检查 design.md/proposal.md，对每项用 question 工具逐项确认：
+c) **配图决策** — 遍历选中 changes，检查 design.md/proposal.md，对每项用 question 工具逐项确认：
 - 有架构变更 → 架构对比图？
 - 有流程变化 → 流程图？
 - 有新增/重构 → 目录结构？
@@ -176,17 +177,19 @@ if missing 非空:
 
 **Step 7** 排版 + 发布 — converter → Pre-3 PNG 自动上传微信 CDN → publish 或 preview。
 
-## Step 8: 收尾 + position 更新
+## Step 8: wewrite 收尾
 
 **8.1** wewrite 写入 `history.yaml`。
 
-**8.2** 更新 position：
+## Step 9: 后处理 — position 更新 + 回复
+
+**9.1** 更新 position：
 ```
 python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-N>
 ```
 跳过项已在 Pre-2 处理，无需重复。
 
-**8.3** 回复用户：
+**9.2** 回复用户：
 - 最终标题 + media_id / HTML 路径
 - 覆盖 N 个 changes
 - 输出位于 `spec2article-wechat-output/`
