@@ -1,0 +1,14 @@
+{
+  "change": "migrate-to-drawio-skill",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "da732a6d3464efbb466236a9ff882a6919281c9fb25edd370c30305e4ff436c7",
+  "files": [
+    { "path": "openspec/changes/migrate-to-drawio-skill/proposal.md", "sha256": "1d6c63b140a73a683266fdd6c261bd0fe3b9944c2ee4cb2a203a4269a4ddcadf" },
+    { "path": "openspec/changes/migrate-to-drawio-skill/design.md", "sha256": "72faca1266db77ceb8146eb60ef9f1fe3cb8d676ca6f2caa0fa008d37f990898" },
+    { "path": "openspec/changes/migrate-to-drawio-skill/tasks.md", "sha256": "b7ec6092c93f8fe77f6c10ab6b20eeb629bf1119eeb690aa1afa9be2b39e0bfb" },
+    { "path": "openspec/changes/migrate-to-drawio-skill/specs/diagram-generation/spec.md", "sha256": "bf23ecd57a446e80f8b7fd571b1f2c7a33a417ecab2b9c9acc33f5f9dac01303" }
+  ]
+}

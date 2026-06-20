@@ -16,7 +16,8 @@ Pre-1  环境 + 配置 + 位置读取
        COMET_ENV="${COMET_ENV:-$(find . ... -path '*/comet/scripts/comet-env.sh' -type f -print -quit)}"
        . "$COMET_ENV"
 
-  1.2  检测 Python 依赖：requests, pyyaml, diagrams, markdown, beautifulsoup4
+  1.2  检测 Python 依赖：requests, pyyaml, markdown, beautifulsoup4
+       检测外部 skill 依赖：wewrite、drawio-skill、draw.io CLI
        wewrite 检测（可选，用于发布）：
        - config.yaml 存在 → 加载 wechat.appid/secret
        - 不存在或未配 → 设 skip_publish = true
@@ -85,32 +86,23 @@ Pre-3  素材提取 + 生图
          - 架构：递归扫描 + 内容分类 + 清理建议
          - 测试：补全测试覆盖，包括 encoding edge cases
 
-  3.3  执行配图决策：
+   3.3  执行配图决策：
 
-       有架构图 →
-         cat > output/{slug}-spec.yaml <<YAML
-         title: "磁盘分析工具架构"
-         direction: LR
-         clusters:
-           - label: "扫描层"
-             nodes:
-               - id: scanner
-                 label: "RecursiveScanner"
-                 type: generic
-               - id: classifier
-                 label: "ContentClassifier"
-                 type: generic
-           - label: "输出层"
-             nodes:
-               - id: report
-                 label: "ReportGenerator"
-                 type: generic
-         YAML
-         python3 <skill>/scripts/diagram.py \
-           output/{slug}-spec.yaml \
-           -o output/{slug}-arch.png
+        根据内容类型映射 drawio-skill 预设：
+          - 架构变更 → Architecture diagram
+          - 流程变化 → Flow diagram
+          - ML 变更   → ML/Deep Learning diagram
+          - 类/接口   → UML class diagram
+          - 协议/交互 → Sequence diagram
+          - 数据模型  → ER diagram
 
-       有目录结构 →
+        对于每张需要生成的图：
+          1. 构建自然语言描述（含关键组件和连接关系）
+          2. 用 Skill tool 加载 drawio-skill SKILL.md
+          3. 委托 drawio-skill：自然语言描述 + 预设类型
+          4. drawio-skill 执行：.drawio XML → drawio CLI 导出 PNG → 自检修复 → 展示
+
+        有目录结构 →
          ```
          ├── scripts/
          │   ├── scan.py
@@ -118,32 +110,34 @@ Pre-3  素材提取 + 生图
          └── references/
          ```
 
-  3.4  交互确认生图结果
-       ┌────────────────────────────────────────────┐
-       │  "这张架构图效果可以吗？                    │
-       │                                            │
-       │  [output/{slug}-arch.png]                  │
-       │                                            │
-       │  A) 没问题，继续                           │
-       │  B) 重新生成（调整 YAML 再渲）              │
-       │  C) 跳过这张图，纯文字段落无图             │
-       └─────────┬──────────────────────────────────┘
-                 │
-       ┌─────────┴─────────┐
-       │         │         │
-       A         B         C
-       │         │         │
-       │   修改 YAML spec  │
-       │   重新生图        │
-       │   回到确认        │
-       │                  │
-       ▼                  ▼
-      保留并嵌入          删除该图行，
-      markdown：         纯文字前进
-      ![...](...png)
+   3.4  交互确认生图结果
+        ┌────────────────────────────────────────────┐
+        │  "这张架构图效果可以吗？                    │
+        │                                            │
+        │  [output/{slug}.png]                       │
+        │                                            │
+        │  A) 没问题，继续                           │
+        │  B) 修改（描述修改需求，≤5轮迭代）          │
+        │  C) 跳过这张图，纯文字段落无图             │
+        └─────────┬──────────────────────────────────┘
+                  │
+        ┌─────────┴──────────────┐
+        │           │            │
+        A           B            C
+        │           │            │
+        │    用户在已有图片       │
+        │    基础上描述修改       │
+        │    drawio-skill 重渲    │
+        │    回到确认（≤5轮）     │
+        │                        │
+        ▼                        ▼
+       保留并嵌入                 删除该图行，
+       markdown：                纯文字前进
+       ![...](...png)
 
-      目录结构代码块同样走此确认循环
-      确认无误后固定到文章
+       达到 5 轮后：接受当前版本或跳过
+       目录结构代码块同样走此确认循环
+       确认无误后固定到文章
 
   3.5  生成完整文章草稿 output/article-{date}.md
        含 3.2 的素材 + 3.4 嵌入的图片/代码块

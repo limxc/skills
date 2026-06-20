@@ -52,5 +52,22 @@ Get-ChildItem -Path "$ScriptDir\*" -Exclude "install.ps1" | Copy-Item -Destinati
 
 Write-Host ""
 Write-Host "Skill installed successfully at: $Target" -ForegroundColor Green
+
+# Install drawio-skill dependency
+Write-Host ""
+Write-Host "Installing drawio-skill dependency..." -ForegroundColor Yellow
+npx skills add Agents365-ai/365-skills -g 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Warning: Failed to install drawio-skill. Install manually:" -ForegroundColor Yellow
+    Write-Host "  npx skills add Agents365-ai/365-skills -g" -ForegroundColor Yellow
+}
+
+# Check draw.io CLI
+$drawioCheck = Get-Command drawio -ErrorAction SilentlyContinue
+if (-not $drawioCheck) {
+    Write-Host "Warning: draw.io CLI not found. Diagram generation requires draw.io Desktop CLI." -ForegroundColor Yellow
+    Write-Host "  Download from: https://github.com/jgraph/drawio-desktop/releases" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "To use it, type: /wechat-article" -ForegroundColor Cyan
