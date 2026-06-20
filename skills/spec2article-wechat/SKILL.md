@@ -10,7 +10,7 @@ description: >-
     and to drawio-skill for architectural and flow diagrams.
 license: MIT
 metadata:
-    version: 1.1.0
+    version: 1.2.0
     created: 2026-06-19
     dependencies:
         - url: https://github.com/oaker-io/wewrite
@@ -35,8 +35,8 @@ Converts Comet development archives into WeChat public account articles. Three c
 ```
 Pre-1  环境 + 配置 + 位置读取   →   Position JSON
 Pre-2  Change 选择 + 写作讨论   →   Topic + Outline + Image Plan
-Pre-3  素材提取 + 生图 + 确认   →   Draft + Embedded Images
-──────────────────────── 进入 wewrite（零改动）
+Pre-3  素材提取 + 生图 + 确认 + 草案调整 → Final Draft + Embedded Images
+──────────────────────── 进入 wewrite（强制交互模式）
 Step 4-8  wewrite 管道          →   Published Article + history.yaml
 Step 9   后处理                 →   Position Updated + User Reply
 ```
@@ -104,7 +104,7 @@ c) **配图** — 遍历 changes 检查 design.md/proposal.md，逐项问：
 ## Pre-3: 素材提取 + 生图 + 确认
 
 **Input**: Selected changes + image plan
-**Output**: Structured materials + confirmed images + draft `.md`
+**Output**: Structured materials + confirmed images + final draft `.md`
 
 **3.1** 读每个 change 内容 → 结构化素材（兼容 wewrite）：
 - `topic` / `framework` / `materials` — 动机、技术要点、架构变化、影响范围
@@ -130,20 +130,37 @@ c) **配图** — 遍历 changes 检查 design.md/proposal.md，逐项问：
 
 **3.3** 每张图 question 工具（单选）：A) 没问题 B) 修改（≤5 轮）C) 跳过。达 5 轮强制接受或跳过。
 
-**3.4** 生成草稿：`spec2article-wechat-output/article-{date}.md` — 含素材 + 已确认图片/代码块。
+**3.4** 草案展示与反馈调整
 
-## Step 4-8: wewrite 管道（零改动，强制交互模式）
+**3.4.1** 展示草案全文：将 3.1 的结构化素材与 3.3 已确认图片/代码块组合为完整文章草案，逐段 inline 展示（不写入文件），每段后标注 `[用户反馈点]`。
 
-**Input**: Draft from Pre-3
+**3.4.2** 逐段反馈：使用 question 工具逐段询问：
+- A) 没问题，继续下一段
+- B) 需要修改（请说明修改要求）
+- C) 整体意见（可多段合并反馈）
+
+**3.4.3** 调整循环：收到 B 或 C 后，按用户要求修改对应段落，重新展示修改后的全文。重复 3.4.1–3.4.2 直至用户对所有段落认可。
+
+**3.4.4** 确认定稿：用户对全文认可后，使用 question 工具确认：
+> A) 确认定稿，写入文件  B) 继续修改
+
+用户选择 A 后进入 3.5。
+
+**3.5** 生成最终稿：`spec2article-wechat-output/article-{date}.md` — 含素材 + 已确认图片/代码块。
+
+## Step 4-8: wewrite 管道（零改动，强制交互模式 — 每步必须用户确认，不得自动推进）
+
+**Input**: Final draft from Pre-3
 **Output**: Published/previewed article + `history.yaml`
 
-**🔴 CHECKPOINT — 即将进入 wewrite。确认前可退出，进入后不可撤回。**
+**🔴 CHECKPOINT — 即将进入 wewrite（强制交互模式）。以下决策点必须逐个用 question 工具经用户确认后才能推进：标题选择 → 骨架选择 → 配图决策 → 预览确认 → 发布确认。确认前可退出，进入后每个决策点自动暂停等待确认。**
 
 加载 wewrite SKILL.md，prompt 头部追加：
 
 ```
-[交互模式] 必须用 question 工具在每个决策点暂停确认，不得自动推进。
-需暂停：标题选择、骨架选择、配图决策、文章预览确认、发布确认。
+[强制交互模式] 你必须用 question 工具在每个决策点暂停并等待用户确认，不得自动跳过或推进任何步骤。
+强制暂停点：标题选择 → 骨架选择 → 配图决策 → 文章预览确认 → 发布确认。
+任何阶段用户都可以选择"取消并退出"，此时标记 processed 并终止流程。
 ```
 
 **Step 4** 写作 — 维度随机化 → 人格加载 → 范文注入 → 写文章 → 快速自检
@@ -181,6 +198,8 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 | Pre-2.1 | change 缺 proposal.md | 跳过，标记 skipped | 告知用户手动检查，继续其余 |
 | Pre-3.2 | drawio 导出失败 | 重试 1 次（简化描述） | 跳过配图，标注"生成失败" |
 | Pre-3.3 | 图片修改达 5 轮 | 强制接受或跳过 | 用户二选一 |
+| Pre-3.4 | 用户反馈不明确或不可操作 | 用 question 工具请求具体修改示例 | 使用当前版本作为最终稿 |
+| Pre-3.4 | 调整循环超过 8 轮 | 建议用户接受当前版本 | 用户决定继续或停止 |
 | Step 4-8 | wewrite 无响应 >30s | 重载 wewrite SKILL.md | 手动介入或跳过发布 |
 | Step 9.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
 | 全局 | 用户中断 | 保存进度到 `spec2article-wechat-output/` 中间文件 | 告知可重跑，已有素材复用 |
@@ -195,6 +214,9 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 | 4 | 写非技术类公众号 | 素材提取不匹配 | 非技术类直接用 wewrite |
 | 5 | 单 change 用"时间线复盘"骨架 | 内容撑不起 | 单 change 用 SCQA |
 | 6 | 图片反复修改 >5 轮 | 边际收益递减 | 5 轮后强制接受或跳过 |
+| 7 | 将草案写入文件后再让用户修改 | 反复写文件浪费操作，用户不便逐段评论 | inline 展示全文，收集反馈后再写入 |
+| 8 | 修改后不重新展示全文 | 用户不知道改了哪里，失去上下文 | 每次调整后重新展示完整草案 |
+| 9 | 未获用户明确确认即写入文件 | 文章未定稿就进入下游管道 | 等待用户选择"确认定稿"后再写入 |
 
 ## 脚本
 
