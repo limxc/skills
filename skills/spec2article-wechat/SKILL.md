@@ -51,9 +51,9 @@ Step 9   后处理                 →   Position Updated + User Reply
 **1.2** 依赖检查 — 逐项检测，缺失项一键安装后告知用户重启：
 
 ```
-~/.agents/skills/wewrite/         → npx skills add oaker-io/wewrite -g
+~/.agents/skills/wewrite/    → npx skills add oaker-io/wewrite -g
 ~/.agents/skills/drawio-skill/    → npx skills add Agents365-ai/365-skills -g
-drawio --version                  → 下载 https://github.com/jgraph/drawio-desktop/releases
+"C:\Program Files\draw.io\draw.io.exe" --version    → 下载 https://github.com/jgraph/drawio-desktop/releases
 ```
 
 发布配置检测 → `~/.agents/skills/wewrite/config.yaml` 有 `wechat.appid` 则就绪；否则 question：A) 仅预览 B) 填写配置后退出。
@@ -70,17 +70,17 @@ drawio --version                  → 下载 https://github.com/jgraph/drawio-de
 
 **🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
-**2.1** 展示编号清单，question 工具（多选）让用户勾选：
+**2.1** 展示change清单，逐项依次调用 question 工具：
 
 ```
- 1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
- 2 | 2026-06-19-disk-analyzer-tests | tweak   | 补充测试用例
+1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
+2 | 2026-06-19-disk-analyzer-tests | tweak   | 补充测试用例
 ```
 
-选项：`☐ 1 — 写文章` / `☐ 1 — 跳过`
-- 跳过项 → `python <skill-dir>/scripts/position.py skipped <dir>`
-- 写文章项 → 传入后续
-- 未选中 → 下次继续显示
+选项：
+- 略过（默认） → 下次继续显示
+- 写文章 → 传入后续
+- 不再显示 → `python <skill-dir>/scripts/position.py skipped <dir>`
 
 **2.2** 写作讨论（question 工具逐项确认）：
 
