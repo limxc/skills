@@ -78,11 +78,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 
 **🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
-**2.1** Change 过滤与展示
-
-**2.1.1** 若 change 数 > 5，先问是否按条件过滤：A) 按日期范围  B) 按 change 类型（full/tweak/hotfix）  C) 不过滤，全展示
-
-**2.1.2** 逐项展示过滤后清单，依次调用 question 工具：
+**2.1** 展示change清单，逐项依次调用 question 工具：
 
 ```
 1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
