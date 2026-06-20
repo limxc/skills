@@ -78,7 +78,11 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 
 **🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
-**2.1** 展示change清单，逐项依次调用 question 工具：
+**2.1** Change 过滤与展示
+
+**2.1.1** 若 change 数 > 5，先问是否按条件过滤：A) 按日期范围  B) 按 change 类型（full/tweak/hotfix）  C) 不过滤，全展示
+
+**2.1.2** 逐项展示过滤后清单，依次调用 question 工具：
 
 ```
 1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
@@ -99,6 +103,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 | 只选了 1 个 change | SCQA | 单 feature 技术叙事 |
 | 选了 ≥2 个 change，且 change 名含时间/日期序列 | 时间线复盘 | 开发历程回顾 |
 | 选中 changes 的 `.comet.yaml` 中任意一个 `workflow: tweak` 或包含架构/重构关键词 | 对比 | 改造类变更 |
+| 选中 changes 混合了 full+tweak/hotfix 类型 | 时间线复盘 | 不同类型变更按时间组织 |
 | 其余多 change 情况 | 清单 | 多个不相关 feature |
 
 匹配后展示给用户确认，可替换为其他骨架。
