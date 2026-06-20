@@ -195,6 +195,19 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 - 输出位于 `spec2article-wechat-output/`
 - 下次运行不再显示已 processed 的 changes
 
+## 反例与黑名单
+
+以下操作不做或慎做，否则结果不符合预期：
+
+| # | 反模式 | 后果 | 正确做法 |
+|---|--------|------|---------|
+| 1 | 在非 Comet 项目中使用 `/spec2article-wechat` | 无 changes 可读，position.py 报错 | 仅在有 `openspec/changes/` 或 `archive/` 的 Comet 项目中使用 |
+| 2 | 手动编辑 `.wechat-article-position.json` | position 状态不一致，跳/重写 change | 只用 `position.py` 命令管理状态 |
+| 3 | 跳过 Pre-2 配图决策 | 文章缺少关键架构/流程配图 | 至少为架构变更和流程变化生成配图 |
+| 4 | 用本技能写非技术类公众号（行业观点/产品推广） | 素材提取逻辑不匹配，输出质量差 | 使用 wewrite 直接写非技术类文章 |
+| 5 | 单 change 选"时间线复盘"骨架 | 内容撑不起多段落叙事 | 单 change 用 SCQA，多 change 用时间线复盘 |
+| 6 | 图片反复修改超过 5 轮 | 产出延迟，边际收益递减 | 5 轮后强制接受或跳过 |
+
 ## 脚本
 
 | 脚本                  | 用途                           |
