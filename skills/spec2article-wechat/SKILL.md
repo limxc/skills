@@ -28,190 +28,142 @@ metadata:
 
 # /spec2article-wechat — Generate WeChat Articles from Comet Archives
 
-You are a writing assistant that converts Comet development archives into WeChat public account (微信公众号) articles. Your workflow has three custom pre-steps that replace wewrite's Step 2-3, followed by wewrite's unmodified Step 4-8 pipeline.
+Converts Comet development archives into WeChat public account articles. Three custom pre-steps (replace wewrite's Step 2-3) → wewrite's unmodified Step 4-8 → post-processing.
 
-## Trigger
-
-- `/spec2article-wechat` — 选择 changes，写文章
-- `/spec2article-wechat 写一篇关于最近变更的文章` — 同上
-
-## Pipeline Overview
+**Trigger**: `/spec2article-wechat` — select changes, write article
 
 ```
-Pre-1  环境 + 配置 + 位置读取
-Pre-2  Change 选择 + 写作讨论
-Pre-3  素材提取 + 生图 + 确认
+Pre-1  环境 + 配置 + 位置读取   →   Position JSON
+Pre-2  Change 选择 + 写作讨论   →   Topic + Outline + Image Plan
+Pre-3  素材提取 + 生图 + 确认   →   Draft + Embedded Images
 ──────────────────────── 进入 wewrite（零改动）
-Step 4  写作
-Step 5  SEO + 验证
-Step 6  视觉 AI
-Step 7  排版 + 发布
-Step 8  wewrite 收尾
-Step 9  后处理：position + 回复
+Step 4-8  wewrite 管道          →   Published Article + history.yaml
+Step 9   后处理                 →   Position Updated + User Reply
 ```
-
-## Fallback 表：异常场景处理
-
-各步骤执行中可能遇到以下异常，按三段式处理（触发条件 → 一线修复 → 仍失败兜底）：
-
-| 步骤 | 触发条件 | 一线修复 | 仍失败兜底 |
-|------|---------|---------|-----------|
-| Pre-1.2 | wewrite/drawio-skill 目录不存在 | `npx skills add ... -g` 自动安装 | 告知用户重启 agent 后重试，终止流程 |
-| Pre-1.2 | drawio CLI 不存在 | 提示下载 draw.io Desktop 并给出链接 | 告知用户跳过配图，纯文字输出 |
-| Pre-1.4 | 无未处理 changes | 展示已 processed/skipped 清单 | 建议运行 `position.py list` 或 `unskip`，终止流程 |
-| Pre-2.1 | change 目录内容不完整（缺 proposal.md） | 跳过该 change，标记为 skipped | 告知用户手动检查 change 结构，继续处理其余 change |
-| Pre-3.3 | drawio 导出失败 | 重试 1 次（简化描述重生成） | 跳过该配图，纯文字替代，在回复中标注"配图生成失败" |
-| Pre-3.4 | 图片修改达 5 轮仍不满意 | 强制接受当前版本或跳过 | 用户二选一，不得继续修改 |
-| Step 4-7 | wewrite 管道卡住（无响应 >30s） | 重新加载 wewrite SKILL.md | 提示用户手动介入或跳过发布仅保存草稿 |
-| Step 9.1 | position.py 执行失败 | 检查 `.wechat-article-position.json` 是否可写 | 告知用户手动运行命令，继续回复 |
-| 全局 | 用户中途中断流程 | 保存当前进度到 `spec2article-wechat-output/` 中间文件 | 告知用户可重新运行，已保存的素材和配图可复用 |
 
 ## Pre-1: 环境 + 配置 + 位置读取
 
-**1.1** Comet 环境检查 — Comet 是本技能的前置依赖，运行时 `$COMET_GUARD` 等变量应已就绪。若 `$COMET_GUARD` 为空，提示 "Comet not found. This skill requires Comet workflow." 后退出。
+**Input**: Comet project with `openspec/changes/` or `archive/`
+**Output**: Ready env + pending change list
 
-**1.2** 检测外部依赖，一键安装所有缺失项：
+**1.1** Comet 检查 — `$COMET_GUARD` 非空则继续；为空则输出 "Comet not found. This skill requires Comet workflow." 后退出。
+
+**1.2** 依赖检查 — 逐项检测，缺失项一键安装后告知用户重启：
 
 ```
-missing = []
-  ~/.agents/skills/wewrite/ 不存在?      → missing += "npx skills add oaker-io/wewrite -g"
-  ~/.agents/skills/drawio-skill/ 不存在?  → missing += "npx skills add Agents365-ai/365-skills -g"
-  drawio --version 失败?                  → missing += "下载 draw.io Desktop (https://github.com/jgraph/drawio-desktop/releases)"
-
-if missing 非空:
-  顺序执行所有安装命令
-  告知用户: "以下依赖已安装，请重启 agent 后重试：{missing}" 后退出
+~/.agents/skills/wewrite/         → npx skills add oaker-io/wewrite -g
+~/.agents/skills/drawio-skill/    → npx skills add Agents365-ai/365-skills -g
+drawio --version                  → 下载 https://github.com/jgraph/drawio-desktop/releases
 ```
 
-检测 wewrite 发布配置：
+发布配置检测 → `~/.agents/skills/wewrite/config.yaml` 有 `wechat.appid` 则就绪；否则 question：A) 仅预览 B) 填写配置后退出。
 
-- `~/.agents/skills/wewrite/config.yaml` 有 `wechat.appid` → 发布就绪
-- 否则用 question 工具询问用户（单选）：
-  - **A) 跳过发布，仅本地预览**
-  - **B) 填写配置** → 告知路径后退出等待
-
-**1.3** 读取 position 状态：`python <skill-dir>/scripts/position.py status`
-
-**1.4** 查找未处理 changes（遍历 `openspec/changes/` 及 `archive/`，过滤已标记的）：`python <skill-dir>/scripts/position.py pending`
-
-状态含义：`processed`=已用、`skipped`=跳过。若无未处理项 → 告知用户，建议运行 `position.py list` 或 `unskip`。
+**1.3** position 状态：`python <skill-dir>/scripts/position.py status`
+**1.4** 未处理 changes：`python <skill-dir>/scripts/position.py pending`
+- 状态：`processed`=已用、`skipped`=跳过
+- 无 pending → 展示清单，建议 `position.py list` 或 `unskip`，退出
 
 ## Pre-2: Change 选择 + 写作讨论
 
-**🔴 CHECKPOINT — 以下步骤将确定文章素材范围。选错的 change 需等 unskip 才能重选。**
+**Input**: Pending change list from Pre-1
+**Output**: Selected changes + title + skeleton type + image plan + persona
 
-**2.1** 展示未处理 changes 编号清单，然后用 **question 工具（多选）** 让用户勾选：
+**🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
-展示格式：
+**2.1** 展示编号清单，question 工具（多选）让用户勾选：
+
 ```
  1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
  2 | 2026-06-19-disk-analyzer-tests | tweak   | 补充测试用例
- 3 | 2026-06-20-migrate-to-drawio   | full    | 迁移到 drawio
 ```
 
-多选选项示例：
-- `☐ 1 — 写文章` / `☐ 1 — 跳过（不再提示）`
-- 每项独立勾选，避免文本解析歧义
+选项：`☐ 1 — 写文章` / `☐ 1 — 跳过`
+- 跳过项 → `python <skill-dir>/scripts/position.py skipped <dir>`
+- 写文章项 → 传入后续
+- 未选中 → 下次继续显示
 
-确认后：
-- 跳跃项 → `python <skill-dir>/scripts/position.py skipped <dir>`
-- 写文章项 → 传入后续流程
-- 未选中项 → 下次继续显示
+**2.2** 写作讨论（question 工具逐项确认）：
 
-**2.2** 写作讨论：
+a) **标题** — 生成 3 候选，用户选或自定义
+b) **骨架** — 按 change 类型推荐：
 
-a) **标题讨论** — 生成 3 个候选标题，用户选择或自定义。
+| change 数 | 推荐骨架 | 适用场景 |
+|-----------|---------|---------|
+| 单 change | SCQA | 单 feature 技术叙事 |
+| 多 change | 时间线复盘 | 开发历程回顾 |
+| before/after | 对比 | 改造类变更 |
+| 独立功能集 | 清单 | 多个不相关 feature |
 
-b) **骨架推荐** — 根据 change 类型推荐，用户确认：
-- SCQA（单 feature 技术叙事）
-- 时间线复盘（多 change 合写）
-- 对比（before/after 改造）
-- 清单（多个独立功能点）
+c) **配图** — 遍历 changes 检查 design.md/proposal.md，逐项问：
+- 架构变更 → 架构对比图？
+- 流程变化 → 流程图？
+- 新增/重构 → 目录结构？
 
-c) **配图决策** — 遍历选中 changes，检查 design.md/proposal.md，对每项用 question 工具逐项确认：
-- 有架构变更 → 架构对比图？
-- 有流程变化 → 流程图？
-- 有新增/重构 → 目录结构？
-
-**2.3** 写作人格 — 检查 wewrite 的 `style.yaml` 中 `writing_persona`；无则推荐 top 2 让用户选。
+**2.3** 写作人格 — 读 wewrite `style.yaml` 的 `writing_persona`；无则推荐 top 2 让用户选。
 
 ## Pre-3: 素材提取 + 生图 + 确认
 
-**3.1** 读取每个选中 change 的内容：
-- `proposal.md` → Why、What Changes、Impact
-- `design.md` → Context、Decisions、Trade-offs（如有）
-- `tasks.md` → 完成的任务清单
-- `.comet.yaml` → workflow 类型、日期
+**Input**: Selected changes + image plan
+**Output**: Structured materials + confirmed images + draft `.md`
 
-**3.2** 输出结构化素材（兼容 wewrite 格式）：
-- `topic` / `framework` / `materials` — 变更动机、技术要点、架构变化、影响范围
+**3.1** 读每个 change 内容 → 结构化素材（兼容 wewrite）：
+- `topic` / `framework` / `materials` — 动机、技术要点、架构变化、影响范围
 
-**3.3** 执行配图决策：
+来源：`proposal.md` → Why/What/Impact；`design.md` → Context/Decisions/Trade-offs；`tasks.md` → 完成清单；`.comet.yaml` → 类型/日期
 
-根据类型确定 drawio-skill 预设：
+**3.2** 配图 — 按类型选 drawio-skill 预设：
 
-| 内容类型              | drawio-skill 预设        |
-| --------------------- | ------------------------ |
-| 架构变更、系统设计    | Architecture diagram     |
-| 业务流程变化、工作流  | Flow diagram             |
-| ML 模型变更、训练管线 | ML/Deep Learning diagram |
-| 类/接口变更           | UML class diagram        |
-| 协议/交互变更         | Sequence diagram         |
-| 数据模型/模式变更     | ER diagram               |
+| 内容类型 | 预设 | 输出文件 |
+|---------|------|---------|
+| 架构变更/系统设计 | Architecture diagram | `{slug}-architecture.png` |
+| 业务流程/工作流 | Flow diagram | `{slug}-flow.png` |
+| ML 模型/训练管线 | ML/Deep Learning diagram | `{slug}-ml.png` |
+| 类/接口变更 | UML class diagram | `{slug}-uml.png` |
+| 协议/交互变更 | Sequence diagram | `{slug}-sequence.png` |
+| 数据模型/模式变更 | ER diagram | `{slug}-er.png` |
 
-对每张图：
-1. 构建自然语言描述（含关键组件、连接关系、布局）
-2. 用 skill tool 加载 drawio-skill
-3. 委托生成：传递自然语言描述 + 预设类型 + 导出要求 "高清画质，Microsoft YaHei 字体"
-4. drawio-skill 自检修复（≤2 轮）
+执行：自然语言描述 → skill tool 加载 drawio-skill → 委托生成（含"高清画质，Microsoft YaHei 字体"） → 自检修复 ≤2 轮。
 
-有目录结构 → 用 `tree`/`Get-ChildItem` → 嵌入代码块。
+目录结构 → `tree`/`Get-ChildItem` → 嵌入代码块。
 
 **🔴 CHECKPOINT — 以下配图将嵌入最终文章。确认前可修改，确认后需重跑才可替换。**
 
-**3.4** 交互确认生图结果：
+**3.3** 每张图 question 工具（单选）：A) 没问题 B) 修改（≤5 轮）C) 跳过。达 5 轮强制接受或跳过。
 
-对每张图用 question 工具（单选）让用户选择：
-- **A) 没问题** → 嵌入 `![alt](spec2article-wechat-output/{slug}.png)`
-- **B) 修改** → 用户描述修改需求 → drawio-skill 重新修改 → 重新导出（≤5 轮）
-- **C) 跳过** → 纯文字段落下掉
+**3.4** 生成草稿：`spec2article-wechat-output/article-{date}.md` — 含素材 + 已确认图片/代码块。
 
-达到 5 轮后强制接受或跳过。目录结构代码块同此循环。
+## Step 4-8: wewrite 管道（零改动，强制交互模式）
 
-**3.5** 生成草稿 `spec2article-wechat-output/article-{date}.md`，含素材和已确认图片/代码块。
+**Input**: Draft from Pre-3
+**Output**: Published/previewed article + `history.yaml`
 
-## Step 4-7: wewrite 管道（零改动，强制交互模式）
+**🔴 CHECKPOINT — 即将进入 wewrite。确认前可退出，进入后不可撤回。**
 
-**🔴 CHECKPOINT — 即将进入 wewrite 管道，后续步骤由 wewrite 驱动。确认前可退出，进入后不可撤回。**
-
-完全使用 wewrite 原始 SKILL.md + toolkit/。加载 wewrite SKILL.md 后，在 prompt 头部追加：
+加载 wewrite SKILL.md，prompt 头部追加：
 
 ```
-[交互模式] 必须用 question 工具在每个决策点暂停等待确认，不得自动推进。
+[交互模式] 必须用 question 工具在每个决策点暂停确认，不得自动推进。
 需暂停：标题选择、骨架选择、配图决策、文章预览确认、发布确认。
 ```
 
-**Step 4** 写作 — 维度随机化 → 人格加载 → 范文注入 → 写文章 → 快速自检。
-
-**Step 5** SEO + 验证 — 3 标题 + 摘要 + 标签 + 质量验证 + humanness_score。
-
-**Step 6** 视觉 AI — 封面（有 key 生图/无 key 出提示词）+ 内文配图（已有 `![alt]` 的跳过）。
-
-**Step 7** 排版 + 发布 — converter → Pre-3 PNG 自动上传微信 CDN → publish 或 preview。
-
-## Step 8: wewrite 收尾
-
-**8.1** wewrite 写入 `history.yaml`。
+**Step 4** 写作 — 维度随机化 → 人格加载 → 范文注入 → 写文章 → 快速自检
+**Step 5** SEO + 验证 — 3 标题 + 摘要 + 标签 + 质量验证 + humanness_score
+**Step 6** 视觉 AI — 封面（有 key 生图/无 key 出提示词）+ 内文配图（已有 `![alt]` 的跳过）
+**Step 7** 排版 + 发布 — converter → Pre-3 PNG 自动上传微信 CDN → publish 或 preview
+**Step 8** wewrite 收尾 — 写入 `history.yaml`
 
 ## Step 9: 后处理 — position 更新 + 回复
 
-**🔴 CHECKPOINT — 执行后 changes 标记为 processed，重新发布需 unskip。确认文章已发布/保存再执行。**
+**Input**: Published article + used change list
+**Output**: Position JSON updated + user reply
 
-**9.1** 更新 position：
+**🔴 CHECKPOINT — 执行后 changes 标记 processed，重新发布需 unskip。确认文章已发布/保存再执行。**
+
+**9.1** position 更新：
 ```
 python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-N>
 ```
-跳过项已在 Pre-2 处理，无需重复。
+跳过项已在 Pre-2.1 处理，无需重复。
 
 **9.2** 回复用户：
 - 最终标题 + media_id / HTML 路径
@@ -219,24 +171,36 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 - 输出位于 `spec2article-wechat-output/`
 - 下次运行不再显示已 processed 的 changes
 
-## 反例与黑名单
+## 异常与边界处理
 
-以下操作不做或慎做，否则结果不符合预期：
+| 步骤 | 触发条件 | 一线修复 | 仍失败兜底 |
+|------|---------|---------|-----------|
+| Pre-1.2 | wewrite/drawio-skill 目录不存在 | `npx skills add ... -g` 安装 | 告知重启后重试，终止 |
+| Pre-1.2 | drawio CLI 不存在 | 提示下载 | 跳过配图，纯文字输出 |
+| Pre-1.4 | 无未处理 changes | 展示已处理清单 | 建议 `position.py list`/`unskip`，终止 |
+| Pre-2.1 | change 缺 proposal.md | 跳过，标记 skipped | 告知用户手动检查，继续其余 |
+| Pre-3.2 | drawio 导出失败 | 重试 1 次（简化描述） | 跳过配图，标注"生成失败" |
+| Pre-3.3 | 图片修改达 5 轮 | 强制接受或跳过 | 用户二选一 |
+| Step 4-8 | wewrite 无响应 >30s | 重载 wewrite SKILL.md | 手动介入或跳过发布 |
+| Step 9.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
+| 全局 | 用户中断 | 保存进度到 `spec2article-wechat-output/` 中间文件 | 告知可重跑，已有素材复用 |
+
+## 反例与黑名单
 
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
-| 1 | 在非 Comet 项目中使用 `/spec2article-wechat` | 无 changes 可读，position.py 报错 | 仅在有 `openspec/changes/` 或 `archive/` 的 Comet 项目中使用 |
-| 2 | 手动编辑 `.wechat-article-position.json` | position 状态不一致，跳/重写 change | 只用 `position.py` 命令管理状态 |
-| 3 | 跳过 Pre-2 配图决策 | 文章缺少关键架构/流程配图 | 至少为架构变更和流程变化生成配图 |
-| 4 | 用本技能写非技术类公众号（行业观点/产品推广） | 素材提取逻辑不匹配，输出质量差 | 使用 wewrite 直接写非技术类文章 |
-| 5 | 单 change 选"时间线复盘"骨架 | 内容撑不起多段落叙事 | 单 change 用 SCQA，多 change 用时间线复盘 |
-| 6 | 图片反复修改超过 5 轮 | 产出延迟，边际收益递减 | 5 轮后强制接受或跳过 |
+| 1 | 在非 Comet 项目中使用 | 无 changes，position.py 报错 | 仅在有 `openspec/changes/` 或 `archive/` 的项目中使用 |
+| 2 | 手动编辑 `.wechat-article-position.json` | 状态不一致，跳/重写 change | 只用 `position.py` |
+| 3 | 跳过 Pre-2 配图决策 | 缺少关键配图 | 架构/流程变更至少生成一张图 |
+| 4 | 写非技术类公众号 | 素材提取不匹配 | 非技术类直接用 wewrite |
+| 5 | 单 change 用"时间线复盘"骨架 | 内容撑不起 | 单 change 用 SCQA |
+| 6 | 图片反复修改 >5 轮 | 边际收益递减 | 5 轮后强制接受或跳过 |
 
 ## 脚本
 
-| 脚本                  | 用途                           |
-| --------------------- | ------------------------------ |
-| `scripts/position.py` | 跟踪/查询/更新 change 处理位置 |
+| 脚本 | 用途 |
+|------|------|
+| `scripts/position.py` | `status`/`pending`/`processed`/`skipped`/`unskip`/`list`/`reset` |
 
 ## 引用参考
 
