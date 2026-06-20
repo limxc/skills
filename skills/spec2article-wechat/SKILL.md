@@ -89,21 +89,23 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 **2.2** 写作讨论（question 工具逐项确认）：
 
 a) **标题** — 生成 3 候选，用户选或自定义
-b) **骨架** — 按 change 类型推荐：
+b) **骨架** — 按以下规则自动匹配（从选中 changes 的 metadata 推断）：
 
-| change 数 | 推荐骨架 | 适用场景 |
-|-----------|---------|---------|
-| 单 change | SCQA | 单 feature 技术叙事 |
-| 多 change | 时间线复盘 | 开发历程回顾 |
-| before/after | 对比 | 改造类变更 |
-| 独立功能集 | 清单 | 多个不相关 feature |
+| 判定条件 | 推荐骨架 | 适用场景 |
+|---------|---------|---------|
+| 只选了 1 个 change | SCQA | 单 feature 技术叙事 |
+| 选了 ≥2 个 change，且 change 名含时间/日期序列 | 时间线复盘 | 开发历程回顾 |
+| 选中 changes 的 `.comet.yaml` 中任意一个 `workflow: tweak` 或包含架构/重构关键词 | 对比 | 改造类变更 |
+| 其余多 change 情况 | 清单 | 多个不相关 feature |
+
+匹配后展示给用户确认，可替换为其他骨架。
 
 c) **配图** — 遍历 changes 检查 design.md/proposal.md，逐项问：
 - 架构变更 → 架构对比图？
 - 流程变化 → 流程图？
 - 新增/重构 → 目录结构？
 
-**2.3** 写作人格 — 读 wewrite `style.yaml` 的 `writing_persona`；无则推荐 top 2 让用户选。
+**2.3** 写作人格 — 读取 wewrite `style.yaml` 的 `writing_persona`；若未设置，按以下规则推荐 2 个候选让用户选择：从 `style.yaml` 的 `personas` 列表中，按 `topic` 关键词与 changes 描述的文本相似度排序，取最高分和次高分。若无 topics 数据，默认推荐 `tech-coder` 和 `storyteller`。
 
 ## Pre-3: 素材提取 + 生图 + 确认
 
