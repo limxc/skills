@@ -85,10 +85,10 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 2 | 2026-06-19-disk-analyzer-tests | tweak   | 补充测试用例
 ```
 
-调用 question 工具时，将"略过"列为首选项并标注 `(Recommended)`，确保 Enter 键可直接确认：
+调用 question 工具时，将"略过"列为首选项，确保 Enter 键可直接确认：
 
 > 选项：
-> - 略过 (Recommended) → 下次继续显示
+> - 略过 → 下次继续显示
 > - 写文章 → 传入后续
 > - 不再显示 → `python <skill-dir>/scripts/position.py skipped <dir>`
 
