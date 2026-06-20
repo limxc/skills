@@ -10,27 +10,29 @@ description: >-
     and to drawio-skill for architectural and flow diagrams.
 license: MIT
 metadata:
-    version: 1.2.0
+    version: 1.3.0
     created: 2026-06-19
     dependencies:
         - url: https://github.com/oaker-io/wewrite
           name: WeWrite
           type: skill
-          note: Writing/SEO/formatting/publishing pipeline (Step 4-7)
+          note: Writing/SEO/formatting/publishing pipeline (Step 4-8)
         - url: https://github.com/Agents365-ai/365-skills
           name: drawio-skill
           type: skill
           note: Diagram generation (Pre-3.3) via draw.io CLI export
-        - name: Comet
+        - url: https://github.com/anomalyco/opencode
+          name: Comet
           type: skill
-          note: Prerequisite — produces the archive changes consumed by this skill
+          note: Prerequisite — produces the archive changes consumed by this skill; install via `npx skills add anomalyco/opencode -g`
 ---
 
 # /spec2article-wechat — Generate WeChat Articles from Comet Archives
 
-Converts Comet development archives into WeChat public account articles. Three custom pre-steps (replace wewrite's Step 2-3) → wewrite's unmodified Step 4-8 → post-processing.
+Converts Comet development archives into WeChat public account articles. Three custom pre-steps (replace wewrite's Step 1-3) → wewrite's unmodified Step 4-8 → post-processing.
 
 **重要：本文所有「使用 question 工具」指令均指调用 question 工具函数，而非输出问题 JSON 文本。每次 question 调用只问一项决策，不得合并多项。**
+**约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
 
 **Trigger**: `/spec2article-wechat` — select changes, write article
 
@@ -67,7 +69,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 **1.3** position 状态：`python <skill-dir>/scripts/position.py status`
 **1.4** 未处理 changes：`python <skill-dir>/scripts/position.py pending`
 - 状态：`processed`=已用、`skipped`=跳过
-- 无 pending → 展示清单，建议 `position.py list` 或 `unskip`，退出
+- 无 pending → 展示清单，执行 `python <skill-dir>/scripts/position.py list` 或 `unskip`，退出
 
 ## Pre-2: Change 选择 + 写作讨论
 
@@ -103,7 +105,7 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 
 **重要：骨架仅决定叙事逻辑和段落组织方式，不得将骨架名称（如"SCQA"、"时间线复盘"）直接用作文章的章节标题。写入 3.5 稿件时，所有标题必须重新拟定为符合公众号风格的自然标题。**
 
-**2.4** 配图计划确认 — 遍历 changes 检查 design.md/proposal.md，逐项问：
+**2.4** 配图计划确认 — 遍历 changes 检查 design.md/proposal.md，按内容类型逐项问（每次 question 只问一种配图类型）：
 - 架构变更 → 架构对比图？
 - 流程变化 → 流程图？
 - 新增/重构 → 目录结构？
@@ -124,12 +126,14 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 
 | 内容类型 | 预设 | 输出文件 |
 |---------|------|---------|
-| 架构变更/系统设计 | Architecture diagram | `{slug}-architecture.png` |
-| 业务流程/工作流 | Flow diagram | `{slug}-flow.png` |
-| ML 模型/训练管线 | ML/Deep Learning diagram | `{slug}-ml.png` |
-| 类/接口变更 | UML class diagram | `{slug}-uml.png` |
-| 协议/交互变更 | Sequence diagram | `{slug}-sequence.png` |
-| 数据模型/模式变更 | ER diagram | `{slug}-er.png` |
+| 架构变更/系统设计 | Architecture diagram | `{change-name}-architecture.png` |
+| 业务流程/工作流 | Flow diagram | `{change-name}-flow.png` |
+| ML 模型/训练管线 | ML/Deep Learning diagram | `{change-name}-ml.png` |
+| 类/接口变更 | UML class diagram | `{change-name}-uml.png` |
+| 协议/交互变更 | Sequence diagram | `{change-name}-sequence.png` |
+| 数据模型/模式变更 | ER diagram | `{change-name}-er.png` |
+
+`{slug}` = change 名称的 kebab-case 英文（即 `.comet.yaml` 所在目录名）。
 
 执行：自然语言描述 → skill tool 加载 drawio-skill → 委托生成（含"高清画质，Microsoft YaHei 字体"） → 自检修复 ≤2 轮。
 
@@ -161,13 +165,13 @@ Test-Path -LiteralPath "openspec/changes/" -PathType Container 或 Test-Path -Li
 **Input**: Final draft from Pre-3
 **Output**: Published/previewed article + `history.yaml`
 
-**🔴 CHECKPOINT — 即将进入 wewrite（强制交互模式）。以下决策点必须逐个用 question 工具经用户确认后才能推进：标题选择 → 骨架选择 → 配图决策 → 预览确认 → 发布确认。确认前可退出，进入后每个决策点自动暂停等待确认。**
+**🔴 CHECKPOINT — 即将进入 wewrite（强制交互模式）。wewrite 各步骤的决策点必须逐个用 question 工具经用户确认后才能推进：Step 4 写作确认 → Step 5 SEO/验证确认 → Step 6 视觉AI确认 → Step 7 预览发布确认 → Step 8 历史记录确认。确认前可退出，进入后每个决策点自动暂停等待确认。**
 
 加载 wewrite SKILL.md，prompt 头部追加：
 
 ```
 [强制交互模式] 你必须用 question 工具在每个决策点暂停并等待用户确认，不得自动跳过或推进任何步骤。
-强制暂停点：标题选择 → 骨架选择 → 配图决策 → 文章预览确认 → 发布确认。
+强制暂停点：Step 4 写作确认 → Step 5 SEO/验证确认 → Step 6 视觉AI确认 → Step 7 预览发布确认 → Step 8 历史记录确认。
 任何阶段用户都可以选择"取消并退出"，此时终止流程，changes 不标记 processed，下次可重新选择。
 ```
 
@@ -202,12 +206,12 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 |------|---------|---------|-----------|
 | Pre-1.2 | wewrite/drawio-skill 目录不存在 | `npx skills add ... -g` 安装 | 告知重启后重试，终止 |
 | Pre-1.2 | drawio CLI 不存在 | 提示下载 | 跳过配图，纯文字输出 |
-| Pre-1.4 | 无未处理 changes | 展示已处理清单 | 建议 `position.py list`/`unskip`，终止 |
+| Pre-1.4 | 无未处理 changes | 展示已处理清单 | 执行 `position.py list` 查看所有 change，终止 |
 | Pre-2.1 | change 缺 proposal.md | 跳过，标记 skipped | 告知用户手动检查，继续其余 |
 | Pre-3.2 | drawio 导出失败 | 重试 1 次（简化描述） | 跳过配图，标注"生成失败" |
 | Pre-3.3 | 图片修改达 5 轮 | 强制接受或跳过 | 用户二选一 |
 | Pre-3.4 | 用户反馈不明确或不可操作 | 用 question 工具请求具体修改示例 | 使用当前版本作为最终稿 |
-| Pre-3.4 | 调整循环超过 8 轮 | 建议用户接受当前版本 | 用户决定继续或停止 |
+| Pre-3.4 | 调整循环超过 8 轮 | 用 question 工具询问用户接受当前版本或继续修改 | 用户选择决定 |
 | Step 4-8 | wewrite 无响应 >30s | 重载 wewrite SKILL.md | 手动介入或跳过发布 |
 | Step 9.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
 | 全局 | 用户中断 | 保存进度到 `spec2article-wechat-output/` 中间文件 | 告知可重跑，已有素材复用 |
