@@ -2,6 +2,8 @@
 comet_change: refine-spec2article-interaction
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-20-refine-spec2article-interaction
+status: final
 ---
 
 # Design: Add Draft Review Step Before Final Article Generation

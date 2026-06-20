@@ -2,12 +2,14 @@
 change: refine-spec2article-interaction
 design-doc: docs/superpowers/specs/2026-06-20-refine-spec2article-interaction-design.md
 base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 # 实施计划: refine-spec2article-interaction
 
 **目标文件**: `C:\Users\limxc\.agents\skills\spec2article-wechat\SKILL.md`
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ## 1. 修改 SKILL.md — 流程结构调整
@@ -72,6 +74,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: 原草稿生成步骤变为步骤 3.5，名称改为"最终稿"。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ### 1.2 新增 3.4 步骤（草案展示 + 反馈调整）
@@ -112,6 +115,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: Pre-3 变为四步：素材提取(3.1) → 生图(3.2) → 确认图片(3.3) → 草案展示与反馈(3.4) → 生成最终稿(3.5)。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ### 1.3 更新异常处理表
@@ -136,6 +140,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: 异常表覆盖草案调整阶段的两种异常场景。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ### 1.4 更新反例与黑名单
@@ -159,6 +164,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: 反例表补齐草案调整阶段的三种反模式。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ## 2. 强化 wewrite 交互模式约束
@@ -185,6 +191,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: 标题明确"每步必须用户确认，不得自动推进"，输入源改为 Final draft。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ### 2.2 更新 CHECKPOINT 提示语
@@ -220,6 +227,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   ```
 - **预期**: CHECKPOINT 和 prompt 头部都明确列出完整的决策链，强调强制暂停。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ## 3. 验证
@@ -236,6 +244,7 @@ base-ref: 936b7b399d2134ba9d493ced403cb5949e052417
   2. 在任意 Comet 项目中执行 `/spec2article-wechat` 确认技能加载正常，Pre-3 显示为 5 步（含草案调整）
 - **预期**: 技能加载无报错，流程结构正确。
 
+archived-with: 2026-06-20-refine-spec2article-interaction
 ---
 
 ## 变更一览
