@@ -190,6 +190,8 @@ C) 自定义
 - `design.md` → Context（背景）/ Decisions（决策与权衡）/ Trade-offs
 - `tasks.md` → 完成清单（checklist）
 
+提取完成后，以摘要形式展示，用 question 工具询问用户是否需要补充素材。
+
 **3.2** 配图生成 — 按 Step 2.4 确认的配图计划，对每种类型用以下模板构造提示词，然后加载 drawio-skill 委托生成：
 
 | 配图类型 | drawio 提示词模板 | 所需素材 |
