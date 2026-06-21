@@ -237,7 +237,7 @@ Remove-Item -Recurse -Force $MMD_DIR -ErrorAction SilentlyContinue
 
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
-| 1.1 | openspec/changes/ 不存在 | `..` 层级重试 | 提示终止 |
+| 1.1 | openspec/ 不存在 | `..` 层级重试 | 提示终止 |
 | 1.2 | mmdc 未安装 | `npm install -g @mermaid-js/mermaid-cli` | 终止 |
 | 1.3 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
