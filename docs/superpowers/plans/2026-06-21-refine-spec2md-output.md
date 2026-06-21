@@ -2,6 +2,7 @@
 change: refine-spec2md-output
 design-doc: docs/superpowers/specs/2026-06-21-refine-spec2md-output-design.md
 base-ref: 523a2fe5c60f92b60136b062f3f1176e387d628d
+archived-with: 2026-06-21-refine-spec2md-output
 ---
 
 # Refine spec2md output — Implementation Plan
