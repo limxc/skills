@@ -149,7 +149,7 @@ D) 自定义
 ## Step 3: 素材提取 + 配图 + 框架 + 写作
 
 **Input**: Selected changes + confirmed title + skeleton + image plan + persona
-**Output**: Final article at `docs/{change-name}-{date}/article.md`
+**Output**: Final article at `spec2md/{change-name}-{date}/article.md`
 
 **3.1** 素材提取 — 遍历每个选中的 change，读取：
 - `proposal.md` → Why（动机）/ What（内容）/ Impact（影响范围）
@@ -170,11 +170,11 @@ D) 自定义
 要求：高清画质，Microsoft YaHei 字体，中文标注，简洁美观。
 ```
 
-输出目录：`docs/{change-name}-{date}/`
+输出目录：`spec2md/{change-name}-{date}/`
 
 每张图生成后，用 question 工具（单选）：A) 没问题 B) 修改（≤5 轮）C) 跳过。达 5 轮强制接受或跳过。
 
-保留 drawio 源文件到 `docs/{change-name}-{date}/{change-name}-{type}.drawio`。
+保留 drawio 源文件到 `spec2md/{change-name}-{date}/{change-name}-{type}.drawio`。
 
 **🔴 CHECKPOINT — 以下配图将嵌入最终文章。确认前可修改，确认后需重跑才可替换。**
 
@@ -213,7 +213,7 @@ D) 自定义
 **3.6** 写入最终文件：
 
 ```
-docs/{change-name}-{date}/
+spec2md/{change-name}-{date}/
 ├── article.md
 ├── {change-name}-architecture.png   (如生成)
 ├── {change-name}-flow.png          (如生成)
@@ -228,16 +228,16 @@ docs/{change-name}-{date}/
 创建目录：
 
 ```
-New-Item -ItemType Directory -Path "docs/{change-name}-{date}" -Force
+New-Item -ItemType Directory -Path "spec2md/{change-name}-{date}" -Force
 ```
 
-写入 `docs/{change-name}-{date}/article.md`，含完整 Markdown 内容和配图引用。
+写入 `spec2md/{change-name}-{date}/article.md`，含完整 Markdown 内容和配图引用。
 
 如选中多个 change，在 article.md 文件名前加上 `-multi` 后缀（`article-multi.md`）。
 
 ## Step 4: 后处理
 
-**Input**: Final article written to `docs/{change-name}-{date}/`
+**Input**: Final article written to `spec2md/{change-name}-{date}/`
 **Output**: Position updated + history recorded + user reply
 
 **🔴 CHECKPOINT — 执行后 changes 标记 processed，需 unskip 才可重新纳入。确认文章已写入再执行。**
@@ -261,7 +261,7 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 **4.3** 回复用户：
 
 - 最终标题：`{title}`
-- 文章路径：`docs/{change-name}-{date}/article.md`
+- 文章路径：`spec2md/{change-name}-{date}/article.md`
 - 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
 - 配图：N 张（architecture / flow / ...）
 - 写作人格：`{persona-name}`

@@ -18,7 +18,7 @@
 - Env override: `$env:SPEC2MD_PROJECT_ROOT` — explicitly set project root path
 
 ## Output Directory
-- `<project-root>/docs/` — generated articles and assets
+- `<project-root>/spec2md/` — generated articles and assets
 
 ## Dependencies
 - drawio-skill at `~/.agents/skills/drawio-skill/`
