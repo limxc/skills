@@ -33,8 +33,14 @@ def main():
     title = sys.argv[2]
     doc_relative = sys.argv[3]
 
+    # Extract date from filename pattern: {date}-{changeName}.md
+    date_label = ""
+    doc_name = Path(doc_relative).stem
+    if doc_name and len(doc_name) >= 10 and doc_name[4] == "-" and doc_name[7] == "-":
+        date_label = doc_name[:10] + " — "
+
     readme_path = project_root / "README.md"
-    link_entry = f"- [{title}]({doc_relative})"
+    link_entry = f"- [{date_label}{title}]({doc_relative})"
     section_header = "## 项目文档"
 
     if not readme_path.exists():
