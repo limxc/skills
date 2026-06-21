@@ -46,26 +46,23 @@ Test-Path -LiteralPath "openspec/" -PathType Container
 
 存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
 
-**1.2** mmdc 依赖检查（硬依赖，不可跳过）：
+**1.2** mermaid 依赖检查：
 
-同时检查 mmdc CLI 和 headless Chrome：
+优先使用本地 mmdc，不可用时回退到 Kroki API：
 
 ```
-$missing = @()
-if (-not (Get-Command mmdc -ErrorAction SilentlyContinue)) { $missing += "mmdc" }
-if (-not (Get-Command npx -ErrorAction SilentlyContinue)) { $missing += "npx" }
-# 检查 headless Chrome 是否已安装（不触发安装）
-$chromeDir = Join-Path $env:USERPROFILE ".cache\puppeteer\chrome-headless-shell"
-if (-not (Test-Path $chromeDir)) { $missing += "chrome-headless-shell" }
-$missing
+$hasMmdc = Get-Command mmdc -ErrorAction SilentlyContinue
+$hasCurl = Get-Command curl -ErrorAction SilentlyContinue
+$hasChrome = Test-Path (Join-Path $env:USERPROFILE ".cache\puppeteer\chrome-headless-shell\*")
 ```
 
-有缺失项时，一次性提示全部安装命令并终止：
+记录结果供 Step 4.3 使用。
+
+最终 mmdc 和 Kroki 都不可用时终止，提示安装：
 ```
 npm install -g @mermaid-js/mermaid-cli
 npx puppeteer browsers install chrome-headless-shell
 ```
-安装后重新运行本 skill。两者都就绪后才继续后续步骤。
 
 **1.3** creating-mermaid-diagrams skill 检查（技能 ID：`creating-mermaid-diagrams`）：
 
@@ -171,14 +168,14 @@ New-Item -ItemType Directory -Path $TMP_DIR -Force
 | C4 高层架构 | "画一个{系统名}的 C4 Context 图:用户→{系统}→{外部 API}" |
 | 甘特图/时间线 | "画一个{项目名}的甘特图:规划期→开发期→测试期" |
 
-加载 creating-mermaid-diagrams skill 并告知输出到 `$TMP_DIR`，**明确要求只用 mmdc 导出，不得回退到 Kroki API**。该 skill 会产出 `.mmd` 源文件和导出的 `.svg` 文件。对每张生成的 SVG，向用户展示完整绝对路径供预览：
+加载 creating-mermaid-diagrams skill 并告知输出到 `$TMP_DIR`。优先使用 mmdc 导出 SVG，若 mmdc 不可用（未安装或 Chrome 版本不匹配）则告知使用 Kroki 导出。
+
+该 skill 会产出 `.mmd` 源文件和导出的 `.svg` 文件。对每张生成的 SVG，向用户展示完整绝对路径供预览：
 ```
 已生成配图：{resolve-path $TMP_DIR/{diagram-name}}.svg
 ```
 
 读取 `.mmd` 文件内容，以 ` ```mermaid ` 代码块形式嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。
-
-如果 mmdc 导出失败（含 Chrome 版本不匹配），**不得自行降级**，应向用户报告错误并终止。
 
 临时文件（`.mmd`、`.svg`）在 Step 6 定稿后统一清理。
 
@@ -248,11 +245,11 @@ if (Test-Path "spec2readme/$date-$changeName-tmp") { Remove-Item -Recurse -Force
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
 | 1.1 | openspec/changes/ 不存在 | `..` 层级重试 | 提示终止 |
-| 1.2 | mmdc/Chrome 缺失 | 一次性提示全部安装命令 | 终止 |
+| 1.2 | mmdc + Kroki 均不可用 | 提示安装 mmdc + Chrome | 终止 |
 | 1.3 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
-| 4.3 | mmdc 导出失败（含 Chrome 版本不匹配） | 报告错误信息 | 终止，不得降级到 Kroki |
+| 4.3 | mmdc 导出失败 | 回退到 Kroki 导出 SVG | Kroki 也失败则跳过配图 |
 | 4.3 | 修改达 3 轮 | 强制接受或跳过 | 二选一 |
 | 5.2 | 用户反馈不明确 | 请求具体示例 | 当前版定稿 |
 | 5.2 | 调整超 5 轮 | 询问继续或接受 | 用户决定 |
