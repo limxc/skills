@@ -245,21 +245,6 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png` 到 `$OU
 
 **🔴 CHECKPOINT — 文章已写入 `$OUTPUT_DIR/`，后续修改需手动编辑。**
 
-输出目录结构：
-
-```
-$OUTPUT_DIR/
-├── article.md
-├── {change-name}-architecture.drawio.png
-├── {change-name}-flow.drawio.png
-├── {change-name}-sequence.drawio.png
-├── {change-name}-uml.drawio.png
-├── {change-name}-er.drawio.png
-└── {change-name}-ml.drawio.png
-```
-
-仅包含 Step 3.2 实际生成的配图文件（drawio-skill 直接输出到 `$OUTPUT_DIR`）。
-
 ## Step 4: 后处理
 
 **Input**: Final article written to `$OUTPUT_DIR/`
