@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Position tracker for spec2article-wechat skill.
+"""Position tracker for spec2md skill.
 
-Tracks which Comet changes have been processed or skipped for WeChat articles.
+Tracks which Comet changes have been processed or skipped for articles.
 Uses change folder names (from openspec/changes/ or openspec/changes/archive/)
 as stable identifiers — works across archive moves.
 
@@ -34,7 +34,7 @@ def _find_project_root() -> Path:
     Checks for markers: .git, .openspec.yaml, openspec/ (as dir).
     Falls back to cwd if none found.
     """
-    root_override = Path(os.environ.get("SPEC2ARTICLE_PROJECT_ROOT", ""))
+    root_override = Path(os.environ.get("SPEC2MD_PROJECT_ROOT", ""))
     if root_override.is_dir():
         return root_override.resolve()
 

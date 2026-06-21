@@ -1,0 +1,15 @@
+{
+  "change": "refactor-spec2md",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1d73dc99e3ea6f190c86c52c028ff1c72f624e99fe41f36545bd8a8853ae8336",
+  "files": [
+    { "path": "openspec/changes/refactor-spec2md/proposal.md", "sha256": "36001237ba0dff6600509418931683fcd362373de5c513dd564f36093529a659" },
+    { "path": "openspec/changes/refactor-spec2md/design.md", "sha256": "27f208a606cf2ffff3a3b9aeca6c7e665ed744507c7f921f163d1adba985b90b" },
+    { "path": "openspec/changes/refactor-spec2md/tasks.md", "sha256": "c8927ec62d0c8d44b45e58a62b7140fc4d045bef8d4c322a693025392508d814" },
+    { "path": "openspec/changes/refactor-spec2md/specs/spec2md-pipeline/spec.md", "sha256": "a1e7d65a87c568337ef5143b855db97529666a5f122d76e6fdc01fafbcfecb2d" },
+    { "path": "openspec/changes/refactor-spec2md/specs/writing-persona/spec.md", "sha256": "26b2a8598e93e808064a59791e71829c99abfdc5ac2da95e85c41a9123f87702" }
+  ]
+}
