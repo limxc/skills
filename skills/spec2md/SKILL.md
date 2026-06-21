@@ -75,6 +75,7 @@ python <skill-dir>/scripts/position.py pending
 ```
 
 - 无 pending changes → 展示所有 changes 清单（含已 processed/skipped 标记），询问是否执行 `unskip` 恢复。用户无操作则退出。
+- 有 pending changes → 展示清单，询问：A) 开始写作 B) 仅查看，不继续。
 
 **🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
@@ -83,12 +84,14 @@ python <skill-dir>/scripts/position.py pending
 **Input**: Pending change list from Step 1
 **Output**: Selected changes + confirmed title + skeleton type + image plan + persona
 
-**2.1** 展示 pending change 清单：
+**2.1** 展示 pending change 清单（`position.py pending` 输出的裸目录名列表）：
 
 ```
-1 | 2026-06-19-disk-space-analyzer | full    | 新增磁盘分析工具
-2 | 2026-06-19-disk-analyzer-tests | tweak   | 补充测试用例
+1 | 2026-06-19-disk-space-analyzer
+2 | 2026-06-19-disk-analyzer-tests
 ```
+
+如需查看 change 详情（类型、描述），读取对应目录下的 `.comet.yaml` 和 `proposal.md` 后展示。
 
 清单展示后自动进入逐项选择，用 question 工具（每次一项）：
 
