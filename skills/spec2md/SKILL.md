@@ -258,13 +258,38 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
   image_types: ["<type-1>", "<type-2>"]
 ```
 
-**4.3** 回复用户：
+**4.3** README 需求时间线追加：
+
+```powershell
+$readmePath = Join-Path $projectRoot "README.md"
+$linkEntry = "- [$title - $date](spec2md/$articleDir/article.md)"
+$sectionHeader = "## 需求时间线"
+
+if (-not (Test-Path $readmePath)) {
+    "`n$sectionHeader`n`n$linkEntry" | Set-Content $readmePath
+} else {
+    $content = Get-Content $readmePath -Raw
+    if ($content -match "$sectionHeader[\s\S]*?(?=\n## |\z)") {
+        $section = $matches[0]
+        $newSection = "$section`n$linkEntry"
+        $content = $content.Replace($section, $newSection)
+        Set-Content $readmePath $content
+    } else {
+        Add-Content $readmePath "`n$sectionHeader`n`n$linkEntry"
+    }
+}
+```
+
+**4.4** 回复用户（汇总）：
 
 - 最终标题：`{title}`
 - 文章路径：`spec2md/{change-name}-{date}/article.md`
 - 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
 - 配图：N 张（architecture / flow / ...）
 - 写作人格：`{persona-name}`
+- ✅ position 已更新
+- ✅ history.yaml 已记录
+- ✅ 需求时间线已追加
 - 下次运行不再显示已 processed 的 changes
 
 ## 异常与边界处理
