@@ -180,7 +180,7 @@ D) 自定义
 
 **3.3** 写作框架选择：
 
-读取 `references/frameworks.md`。根据选中 changes 的内容特征和 Step 2.3 的骨架类型，推荐最匹配的框架，用 question 工具确认。
+读取 `references/frameworks.md`。根据选中 changes 的内容特征和 Step 2.3 的骨架类型，推荐最匹配的框架，用 question 工具确认。选项包含「不使用框架」— 选择后跳过框架注入，文章仅按骨架结构和 persona 风格组织。
 
 **3.4** 写作 — 整合以下元素生成文章：
 
