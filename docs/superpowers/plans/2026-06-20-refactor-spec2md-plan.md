@@ -2,6 +2,7 @@
 change: refactor-spec2md
 design-doc: docs/superpowers/specs/2026-06-20-refactor-spec2md-design.md
 base-ref: 02b51e8523017df5f01d864cd399f35ee8558629
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 # spec2md 重构实施计划
@@ -22,6 +23,7 @@ base-ref: 02b51e8523017df5f01d864cd399f35ee8558629
 
 两个目录都需要同步修改。
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 1: 移植写作人格文件
@@ -44,6 +46,7 @@ Get-ChildItem -Path "<skill-dir>/personas/" -Filter "*.yaml"
 ```
 Expected: 7 persona yaml 文件
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 2: SKILL.md 主流程重构
@@ -113,6 +116,7 @@ dependencies:
     type: skill
 ```
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 3: 更新 position.py
@@ -128,6 +132,7 @@ dependencies:
 
 确认没有引用 `spec2article-wechat-output/` 路径
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 4: 更新 AGENTS.md 和 README.md
@@ -148,6 +153,7 @@ dependencies:
 
 更新名称、描述、用法、输出目录等
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 5: 全局安装同步 + 最终验证
@@ -164,6 +170,7 @@ dependencies:
 - [x] 输出路径为 `docs/{change-name}-{date}/`
 - [x] position 正确更新
 
+archived-with: 2026-06-21-refactor-spec2md
 ---
 
 ### Task 6: 提交所有变更

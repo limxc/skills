@@ -2,6 +2,8 @@
 comet_change: refactor-spec2md
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-21-refactor-spec2md
+status: final
 ---
 
 # spec2article-wechat → spec2md 重构设计
