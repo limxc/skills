@@ -90,7 +90,7 @@ python <skill-dir>/scripts/position.py pending
 2 | 2026-06-19-disk-analyzer-tests
 ```
 
-如需查看 change 详情（类型、描述），读取对应目录下的 `.comet.yaml` 和 `proposal.md` 后展示。
+如需查看 change 详情（类型、描述），读取对应目录下的 `proposal.md` 后展示。
 
 清单展示后自动进入逐项选择，用 question 工具（每次一项）：
 
@@ -123,7 +123,7 @@ D) 自定义
 |---------|---------|---------|
 | 只选了 1 个 change | SCQA | 单 feature 技术叙事 |
 | 选了 ≥2 个 change，且名含时间/日期序列 | 时间线复盘 | 开发历程回顾 |
-| 任意 change 的 `.comet.yaml` 中 `workflow: tweak` 或含架构/重构关键词 | 对比 | 改造类变更 |
+| change 名含 tweak/refactor/cleanup/优化 关键词 | 对比 | 改造类变更 |
 | 混合了 full+tweak/hotfix 类型 | 时间线复盘 | 不同类型变更按时间组织 |
 | 其余多 change 情况 | 清单 | 多个不相关 feature |
 
