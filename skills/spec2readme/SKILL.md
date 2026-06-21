@@ -171,14 +171,16 @@ New-Item -ItemType Directory -Path $TMP_DIR -Force
 | C4 高层架构 | "画一个{系统名}的 C4 Context 图:用户→{系统}→{外部 API}" |
 | 甘特图/时间线 | "画一个{项目名}的甘特图:规划期→开发期→测试期" |
 
-加载 creating-mermaid-diagrams skill 并告知输出到 `$TMP_DIR`。该 skill 会产出 `.mmd` 源文件和导出的 `.svg` 文件。对每张生成的 SVG，向用户展示完整绝对路径供预览：
+加载 creating-mermaid-diagrams skill 并告知输出到 `$TMP_DIR`，**明确要求只用 mmdc 导出，不得回退到 Kroki API**。该 skill 会产出 `.mmd` 源文件和导出的 `.svg` 文件。对每张生成的 SVG，向用户展示完整绝对路径供预览：
 ```
-已生成配图：{resolve-path $TMP_DIR/{diagram-name}.svg}
+已生成配图：{resolve-path $TMP_DIR/{diagram-name}}.svg
 ```
 
 读取 `.mmd` 文件内容，以 ` ```mermaid ` 代码块形式嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。
 
-临时文件（`.mmd`、`.svg`）在 Step 6 定稿后统一清理，最终 Markdown 中不依赖任何外部文件。
+如果 mmdc 导出失败（含 Chrome 版本不匹配），**不得自行降级**，应向用户报告错误并终止。
+
+临时文件（`.mmd`、`.svg`）在 Step 6 定稿后统一清理。
 
 ## Step 5: 写作 + 草案交互
 
@@ -250,7 +252,7 @@ if (Test-Path "spec2readme/$date-$changeName-tmp") { Remove-Item -Recurse -Force
 | 1.3 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
-| 4.3 | mermaid 导出失败 | 重试 1 次 | 跳过配图 |
+| 4.3 | mmdc 导出失败（含 Chrome 版本不匹配） | 报告错误信息 | 终止，不得降级到 Kroki |
 | 4.3 | 修改达 3 轮 | 强制接受或跳过 | 二选一 |
 | 5.2 | 用户反馈不明确 | 请求具体示例 | 当前版定稿 |
 | 5.2 | 调整超 5 轮 | 询问继续或接受 | 用户决定 |
