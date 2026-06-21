@@ -22,10 +22,10 @@ metadata:
 Converts OpenSpec change archives into Markdown documentation with Mermaid diagrams. Output goes to `spec2readme/{date}-{changeName}.md` and auto-updates the project's `README.md`.
 
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
-**交互层级：Step 1.2 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 5（定稿后修改请求）使用直接对话，不得使用 question 工具。**
+**交互层级：Step 1.4 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 5（定稿后修改请求）使用直接对话，不得使用 question 工具。**
 
 ```
-Step 1  环境检查（openspec + creating-mermaid-diagrams）+ position 读取
+Step 1  环境检查（openspec + mmdc + creating-mermaid-diagrams）+ position 读取
 Step 2  Change 选择
 Step 3  标题 + 输出文件名确认
 Step 4  素材提取 + mermaid 配图
@@ -46,13 +46,25 @@ Test-Path -LiteralPath "openspec/" -PathType Container
 
 存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
 
-**1.2** creating-mermaid-diagrams skill 检查：
+**1.2** mmdc 检查（creating-mermaid-diagrams 语法校验所需）：
+
+```
+Get-Command mmdc -ErrorAction SilentlyContinue
+```
+
+不存在 → 提示安装并终止：
+```
+npm install -g @mermaid-js/mermaid-cli
+```
+安装后重新运行本 skill。
+
+**1.3** creating-mermaid-diagrams skill 检查：
 
 ```
 npx skills ls -g 2>&1 | Select-String -Pattern "creating-mermaid-diagrams"
 ```
 
-不存在输出中 → 提示安装并终止：
+不存在 → 提示安装并终止：
 ```
 npx skills add https://github.com/Agents365-ai/mermaid-skill
 ```
@@ -209,8 +221,9 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTP
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
 | 1.1 | openspec/changes/ 不存在 | `..` 层级重试 | 提示终止 |
-| 1.2 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
-| 1.3 | 无 pending changes | unskip 选项 | 终止 |
+| 1.2 | mmdc 未安装 | `npm install -g @mermaid-js/mermaid-cli` | 终止 |
+| 1.3 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
+| 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
 | 4.3 | creating-mermaid-diagrams 加载失败 | 重新加载 | 跳过配图 |
 | 4.3 | 修改达 3 轮 | 强制接受或跳过 | 二选一 |
