@@ -2,6 +2,8 @@
 comet_change: fix-spec2md-description-and-cleanup
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-21-fix-spec2md-description-and-cleanup
+status: final
 ---
 
 # spec2md 描述修正与清理 — Design Doc

@@ -16,7 +16,7 @@ metadata:
         - url: https://github.com/anomalyco/opencode
           name: Comet
           type: skill
-           note: Comet workflow creates the OpenSpec change archives consumed by this skill
+          note: Comet workflow creates the OpenSpec change archives consumed by this skill
 ---
 
 # /spec2md — Generate Markdown Articles from OpenSpec Archives
@@ -24,7 +24,6 @@ metadata:
 Converts OpenSpec change archives into Markdown articles with diagrams. Four-step workflow: environment check → change selection + writing discussion → material extraction + diagram + writing → post-processing.
 
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
-**交互层级：Step 2.1 / 2.3 / 3.3 使用 question 工具；Step 3.5.x（草案展示 → 反馈 → 修改 → 定稿）使用直接对话，不得使用 question 工具。**
 
 ```
 Step 1  环境检查（openspec + drawio）+ position 读取
@@ -35,13 +34,13 @@ Step 4  position 更新 + README 时间线追加 + 回复
 
 ## Step 1: 环境检查
 
-**Input**: OpenSpec project with `openspec/changes/` or `archive/`
+**Input**: OpenSpec project with `openspec/`
 **Output**: Ready env + pending change list
 
 **1.1** openspec 结构检查：
 
 ```
-Test-Path -LiteralPath "openspec/changes/" -PathType Container
+Test-Path -LiteralPath "openspec/" -PathType Container
 ```
 
 存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
@@ -62,7 +61,6 @@ draw.io CLI 检查：
 
 不存在 → question 工具询问：A) 跳过配图，纯文字输出 B) 下载后重启。
 
-**不检查 wewrite。不检查 WeChat 发布配置。**
 
 **1.3** position 状态：
 
@@ -77,6 +75,8 @@ python <skill-dir>/scripts/position.py pending
 ```
 
 - 无 pending changes → 展示所有 changes 清单（含已 processed/skipped 标记），询问是否执行 `unskip` 恢复。用户无操作则退出。
+
+**🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
 ## Step 2: Change 选择 + 写作讨论
 
@@ -99,12 +99,9 @@ python <skill-dir>/scripts/position.py pending
 
 pending changes ≥ 5 时，在开始前先问一次「批量操作」：
 - **全部写文章** — 自动选中所有，跳过逐项确认
-- **全部略过** — 自动跳过所有，退出
 - **逐项确认** — 回退到逐项询问
 
 所有 change 处理完毕后，收集选中的 changes 列表传入 Step 2.2。
-
-**🔴 CHECKPOINT — 以下步骤确定文章素材范围。选错的 change 需 unskip 才能重选。**
 
 **2.2** 标题确认 — 根据选中 changes 内容生成 3 个候选标题，用 question 工具：
 
@@ -118,7 +115,7 @@ D) 自定义
 
 选择 D 时，提示用户输入自定义标题。
 
-**2.3** 骨架匹配 — 按以下规则自动匹配并应用（不再 question 确认，用户可在 Step 3.5 草案检查时要求替换）：
+**2.3** 骨架匹配 — 按以下规则自动推荐，用 question 工具让用户选择：
 
 | 判定条件 | 推荐骨架 | 适用场景 |
 |---------|---------|---------|
@@ -128,11 +125,16 @@ D) 自定义
 | 混合了 full+tweak/hotfix 类型 | 时间线复盘 | 不同类型变更按时间组织 |
 | 其余多 change 情况 | 清单 | 多个不相关 feature |
 
-骨架自动应用，无需确认。骨架仅决定叙事逻辑和段落组织方式，**不得将骨架名称直接用作章节标题**。写入 article.md 时所有标题须重新拟定为自然标题。
+选项：
+A) `{推荐骨架}`（推荐）
+B) `{备选骨架}`
+C) 自定义
+
+用户选择后，骨架仅决定叙事逻辑和段落组织方式，**不得将骨架名称直接用作章节标题**。写入 article.md 时所有标题须重新拟定为自然标题。
 
 **🔴 CHECKPOINT — 骨架确认后，以下步骤确定配图和写作风格。**
 
-**2.4** 配图计划 — 遍历选中的 changes，检查 `design.md` / `proposal.md`，自动检测所有匹配类型。汇总检测结果后用 question 工具一次性确认（不再逐项询问）：
+**2.4** 配图计划 — 遍历选中的 changes，检查 `design.md` / `proposal.md`，自动检测所有匹配类型。逐项用 question 工具确认：
 
 | 检测到内容 | 推荐配图 | 说明 |
 |-----------|---------|------|
@@ -141,28 +143,23 @@ D) 自定义
 | ML 模型/训练管线 | ML/Deep Learning diagram | 模型结构、数据管线 |
 | 类/接口变更 | UML class diagram | 类层次、接口依赖 |
 | 协议/交互变更 | Sequence diagram | 调用顺序、消息交换 |
-| 数据模型变更 | ER diagram | 实体关系、字段设计 |
+| 数据模型变更 | ER diagram | 实体关系、数据设计 |
 
-展示所有检测到的推荐配图后，一次性问：A) 全部生成 B) 手动选择 C) 全部跳过。选择 B 时回退到逐项确认。
+每项选项：A) 生成 B) 跳过。
 
 **2.5** 写作人格选择：
 
-**2.5.1** 读取 `references/persona-selection.md`，按匹配表规则（选题关键词 → 首选/次选人格）推荐 top 2 并说明推荐理由。
-
-**2.5.2** 自动选择人格，不再 question 确认。按推荐顺序取 top 1。选择结果在 Step 4.3 回复中告知用户。用户可在 Step 3.5 草案阶段要求更换人格。
+读取 `references/persona-selection.md`，按匹配表规则推荐 top 3，用 question 工具展示推荐理由和示例文字，让用户三选一。用户也可选择不使用人格或自定义人格。
 
 ## Step 3: 素材提取 + 配图 + 框架 + 写作
 
 **Input**: Selected changes + confirmed title + skeleton + image plan + persona
-**Output**: Final article at `spec2md/{change-name}-{date}/article.md`
+**Output**: Final article at `spec2md/{date}-{change-name}/article.md`
 
 **3.1** 素材提取 — 遍历每个选中的 change，读取：
 - `proposal.md` → Why（动机）/ What（内容）/ Impact（影响范围）
 - `design.md` → Context（背景）/ Decisions（决策与权衡）/ Trade-offs
 - `tasks.md` → 完成清单（checklist）
-- `.comet.yaml` → type（change 类型）/ date（日期）
-
-整理为结构化素材摘要，inline 展示给用户快速确认。
 
 **3.2** 配图生成 — 按 Step 2.4 确认的配图计划，对每种类型用以下模板构造提示词，然后加载 drawio-skill 委托生成：
 
@@ -181,15 +178,15 @@ D) 自定义
 加载 drawio-skill，让它画如下图表：{填充后的提示词}
 ```
 
-drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成后读取 drawio-skill 返回的文件路径，将它们复制到 `spec2md/{change-name}-{date}/`。
+drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成后读取 drawio-skill 返回的文件路径，将它们复制到 `spec2md/{date}-{change-name}/`，并显示完整路径。
 
-所有配图生成后，一次性列出所有图片文件，用 question 工具问：A) 全部没问题 B) 逐张确认 C) 全部跳过。选 B 时逐张询问（单选）：A) 没问题 B) 修改（≤3 轮）C) 跳过。达 3 轮强制接受或跳过。
+所有配图生成后，逐张用 question 工具确认（单选）：A) 没问题 B) 修改（≤3 轮）C) 跳过。达 3 轮强制接受或跳过。
 
-**🔴 CHECKPOINT — 以下配图将嵌入最终文章。确认前可修改，确认后需重跑才可替换。**
+**🔴 CHECKPOINT — 配图已确认。**
 
 **3.3** 写作框架选择：
 
-读取 `references/frameworks.md`。根据选中 changes 的内容特征和 Step 2.3 的骨架类型，自动匹配最合适的框架，不再 question 确认。如检测到无明显匹配的框架，自动选择「不使用框架」— 文章仅按骨架结构和 persona 风格组织。
+读取 `references/frameworks.md`。根据选中 changes 的内容特征和 Step 2.3 的骨架类型，推荐最匹配的 3 个框架（含示例文字），用 question 工具让用户四选一。选项：A) 框架A（推荐）B) 框架B C) 框架C D) 不使用框架，文章仅按骨架结构和 persona 风格组织。
 
 **3.4** 写作 — 整合以下元素生成文章：
 
@@ -222,7 +219,7 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成
 **3.6** 写入最终文件：
 
 ```
-spec2md/{change-name}-{date}/
+spec2md/{date}-{change-name}/
 ├── article.md
 ├── {change-name}-architecture.drawio.png
 ├── {change-name}-flow.drawio.png
@@ -239,16 +236,14 @@ spec2md/{change-name}-{date}/
 创建目录：
 
 ```
-New-Item -ItemType Directory -Path "spec2md/{change-name}-{date}" -Force
+New-Item -ItemType Directory -Path "spec2md/{date}-{change-name}" -Force
 ```
 
-写入 `spec2md/{change-name}-{date}/article.md`，含完整 Markdown 内容和配图引用。
-
-如选中多个 change，在 article.md 文件名前加上 `-multi` 后缀（`article-multi.md`）。
+写入 `spec2md/{date}-{change-name}/article.md`，含完整 Markdown 内容和配图引用。
 
 ## Step 4: 后处理
 
-**Input**: Final article written to `spec2md/{change-name}-{date}/`
+**Input**: Final article written to `spec2md/{date}-{change-name}/`
 **Output**: Position updated + user reply
 
 **🔴 CHECKPOINT — 执行后 changes 标记 processed，需 unskip 才可重新纳入。确认文章已写入再执行。**
@@ -268,9 +263,10 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 **4.3** 回复用户（汇总）：
 
 - 最终标题：`{title}`
-- 文章路径：`spec2md/{change-name}-{date}/article.md`
+- 文章路径：`spec2md/{date}-{change-name}/article.md`
 - 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
 - 配图：N 张（architecture / flow / ...）
+- 写作框架：`{framework-name}`
 - 写作人格：`{persona-name}`
 - ✅ position 已更新
 - ✅ 需求时间线已追加
@@ -280,13 +276,13 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 
 | 步骤 | 触发条件 | 一线修复 | 仍失败兜底 |
 |------|---------|---------|-----------|
-| 1.1 | openspec/changes/ 不存在 | 在 `..` 层级重试 | 提示非 Comet 项目，终止 |
+| 1.1 | openspec/changes/ 不存在 | 在 `..` 层级重试 | 提示非 OpenSpec 项目，终止 |
 | 1.2 | drawio-skill 目录不存在 | `npx skills add ... -g` 安装 | 告知重启后重试，终止 |
 | 1.2 | drawio CLI 不存在 | 提示下载 | 跳过配图，纯文字输出 |
 | 1.4 | 无 pending changes | 展示所有 changes + unskip 选项 | 用户无操作则终止 |
 | 2.1 | change 缺 proposal.md | 标记 skipped 跳过 | 告知手动检查，继续其余 |
 | 2.2 | 标题候选描述不佳 | 用户自定义 | 直接使用 change 名称 |
-| 2.3 | 骨架自动匹配不合理 | 用户手动选择 | 默认 SCQA |
+| 2.3 | 推荐骨架不满足 | 用户自定义 | 默认 SCQA |
 | 3.2 | drawio 导出失败 | 重试 1 次（简化描述） | 跳过配图，标注"生成失败" |
 | 3.2 | drawio-skill 加载失败 | 重新加载 drawio-skill | 跳过配图，纯文字输出 |
 | 3.2 | 图片修改达 3 轮 | 强制接受或跳过 | 用户二选一 |
@@ -302,9 +298,9 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
 | 1 | 在非 OpenSpec 项目中使用 | 无 changes，position.py 报错 | Step 1.1 目录探测自动检查并退出 |
-| 2 | 手动编辑 `.wechat-article-position.json` | 状态不一致 | 只用 `position.py` |
+| 2 | 手动编辑 `.spec2md-position.json` | 状态不一致 | 只用 `position.py` |
 | 3 | 跳过 Step 2.4 配图决策 | 缺少关键配图 | 架构/流程变更至少生成一张图 |
-| 4 | 单 change 用"时间线复盘"骨架 | 内容撑不起 | 单 change 用 SCQA |
+| 4 | 用户选了不合适的骨架 | 内容撑不起 | 在 question 选项中提供推荐理由辅助判断 |
 | 5 | 图片反复修改 >5 轮 | 边际收益递减 | 5 轮后强制接受或跳过 |
 | 6 | 将草案写入文件后再让用户修改 | 反复写文件浪费操作 | inline 展示全文，收集反馈后再写入 |
 | 7 | 修改后不重新展示全文 | 用户不知道改了哪里 | 每次调整后重新展示完整草案 |
@@ -319,13 +315,12 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 | `scripts/position.py` | `status` / `pending` / `processed` / `skipped` / `unskip` / `list` / `reset` |
 | `scripts/append_readme.py` | 向 README.md 需求时间线追加文章链接 |
 
-位置文件：`<project-root>/.wechat-article-position.json`
+位置文件：`<project-root>/.spec2md-position.json`
 环境变量：`$env:SPEC2MD_PROJECT_ROOT` — 显式设置项目根路径
 
 ## 引用参考
 
 - drawio-skill `SKILL.md` — Step 3.2 委托指令
-- `.comet.yaml` — change 元数据格式
 - `personas/*.yaml` — 写作人格定义（YAML 格式，含 voice_density / uncertainty_rate / emotional_arc 等参数）
 - `references/persona-selection.md` — 人格选择指南与匹配表
 - `references/writing-guide.md` — 反 AI 检测写作规范

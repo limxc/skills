@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Position tracker for spec2md skill.
 
-Tracks which Comet changes have been processed or skipped for articles.
+Tracks which OpenSpec changes have been processed or skipped for articles.
 Uses change folder names (from openspec/changes/ or openspec/changes/archive/)
 as stable identifiers — works across archive moves.
 
-Position file: <project-root>/.wechat-article-position.json
+Position file: <project-root>/.spec2md-position.json
 """
 
 import argparse
@@ -25,7 +25,7 @@ class Position:
     updated_at: Optional[str] = None
 
 
-POSITION_FILE = ".wechat-article-position.json"
+POSITION_FILE = ".spec2md-position.json"
 
 
 def _find_project_root() -> Path:
@@ -168,7 +168,7 @@ def find_pending_changes(project_root: Optional[Path] = None) -> list[dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Comet change position tracker")
+    parser = argparse.ArgumentParser(description="OpenSpec change position tracker")
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("status", help="Show current position (processed + skipped lists)")

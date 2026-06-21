@@ -8,7 +8,7 @@
 - `scripts/append_readme.py` — append article link to README.md 需求时间线 section
 
 ## Position Tracking
-- File: `<project-root>/.wechat-article-position.json`
+- File: `<project-root>/.spec2md-position.json`
 - Tracks: `processed` (used in articles) + `skipped` (user dismissed) lists
 - Commands:
   - `python <skill>/scripts/position.py pending` — list change to process

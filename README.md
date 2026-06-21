@@ -14,7 +14,7 @@ npx skills add limxc/skills
 |-------|------|----------|
 | mao | 毛泽东哲学思维框架与问题分析方法，基于《矛盾论》《实践论》等核心著作 | `/mao <问题>` |
 | disk-analyser-skill | Windows 磁盘空间分析工具，递归扫描目录并分类清理建议 | `/disk-space-analyzer <路径>` |
-| spec2article-wechat | 从 Comet archive 生成微信公众号文章。读取已归档变更，经写作讨论后由 wewrite 管道完成写作/SEO/配图/排版/发布 | `/spec2article-wechat` |
+| spec2md | 从 OpenSpec 变更归档生成 Markdown 总结文章，含 drawio 配图 | `/spec2md` |
 
 ## 项目结构
 
@@ -42,16 +42,15 @@ skills/
 │           ├── test_categorizer.py
 │           ├── test_formatter.py
 │           └── test_integration.py
-└── spec2article-wechat/
-    ├── SKILL.md
-    ├── AGENTS.md
-    ├── README.md
-    ├── scripts/
-    │   └── position.py
-    └── references/
-        ├── archives-workflow.md
-        ├── writing-guide.md
-        └── wechat-publish.md
+├── spec2md/
+│   ├── SKILL.md
+│   ├── AGENTS.md
+│   ├── README.md
+│   ├── personas/
+│   ├── scripts/
+│   │   ├── position.py
+│   │   └── append_readme.py
+│   └── references/
 ```
 
-> `spec2article-wechat` 的完整流程见 [`skills/spec2article-wechat/SKILL.md`](skills/spec2article-wechat/SKILL.md)
+> `spec2md` 详见 [`skills/spec2md/README.md`](skills/spec2md/README.md)
