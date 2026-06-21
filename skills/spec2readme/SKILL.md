@@ -191,6 +191,8 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 
 用户阅读后可提出修改请求（直接对话，不得使用 question）。如需修改，编辑文件后再次展示路径。
 
+**🔴 CHECKPOINT — 必须用户明确确认"没问题"、"可以"、"定稿"或类似表示后，方可进入 Step 6。用户未确认前不得执行 position 更新或 README 追加。**
+
 ## Step 6: 后处理
 
 **Input**: Final document at `$OUTPUT_FILE`
