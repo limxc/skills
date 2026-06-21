@@ -321,7 +321,7 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 | `scripts/position.py` | `status` / `pending` / `processed` / `skipped` / `unskip` / `list` / `reset` |
 | `scripts/append_readme.py` | 向 README.md 需求时间线追加文章链接 |
 
-位置文件：`<skill-dir>/.spec2md-position.json`
+位置文件：`<project-root>/spec2md/.spec2md-position.json`
 
 ## 引用参考
 

@@ -5,7 +5,7 @@ Tracks which OpenSpec changes have been processed or skipped for articles.
 Uses change folder names (from openspec/changes/ or openspec/changes/archive/)
 as stable identifiers — works across archive moves.
 
-Position file: <skill-dir>/.spec2md-position.json
+Position file: <project-root>/spec2md/.spec2md-position.json
 """
 
 import argparse
@@ -27,14 +27,41 @@ class Position:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SKILL_DIR = SCRIPT_DIR.parent
-POSITION_FILE = SKILL_DIR / ".spec2md-position.json"
+
+
+def _find_project_root() -> Path:
+    """Locate project root via env var, openspec/, .git/, or AGENTS.md."""
+    env_root = os.environ.get("SPEC2MD_PROJECT_ROOT")
+    if env_root:
+        return Path(env_root).resolve()
+    cwd = Path.cwd().resolve()
+    for path in [cwd, *cwd.parents]:
+        if (
+            (path / "openspec").is_dir()
+            or (path / ".git").is_dir()
+            or (path / "AGENTS.md").is_file()
+        ):
+            return path
+    return cwd
 
 
 def get_position_path(project_root: Optional[Path] = None) -> Path:
-    return POSITION_FILE
+    if project_root is None:
+        project_root = _find_project_root()
+    return project_root / "spec2md" / ".spec2md-position.json"
+
+
+def _migrate_old_position(project_root: Optional[Path] = None) -> None:
+    """Migrate position file from old <skill-dir> location to <project-root>/spec2md/."""
+    old_path = SKILL_DIR / ".spec2md-position.json"
+    new_path = get_position_path(project_root)
+    if old_path.exists() and not new_path.exists():
+        new_path.parent.mkdir(parents=True, exist_ok=True)
+        old_path.rename(new_path)
 
 
 def read_position(project_root: Optional[Path] = None) -> Position:
+    _migrate_old_position(project_root)
     pos_path = get_position_path(project_root)
     if not pos_path.exists():
         return Position()
@@ -52,6 +79,7 @@ def read_position(project_root: Optional[Path] = None) -> Position:
 
 def write_position(position: Position, project_root: Optional[Path] = None) -> None:
     pos_path = get_position_path(project_root)
+    pos_path.parent.mkdir(parents=True, exist_ok=True)
     position.updated_at = datetime.now().isoformat()
     pos_path.write_text(
         json.dumps(asdict(position), ensure_ascii=False, indent=2),
