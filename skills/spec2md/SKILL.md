@@ -120,6 +120,12 @@ D) 自定义
 
 选择 D 时，提示用户输入自定义标题。
 
+标题确认后，创建输出目录：
+
+```
+New-Item -ItemType Directory -Path "spec2md/{date}-{change-name}" -Force
+```
+
 **2.3** 骨架匹配
 
 **Input**: Selected changes list
@@ -251,13 +257,7 @@ spec2md/{date}-{change-name}/
 
 `{change-name}` = 选中 changes 中第一个的目录名，`{date}` = 当天日期（YYYY-MM-DD）。
 
-创建目录：
-
-```
-New-Item -ItemType Directory -Path "spec2md/{date}-{change-name}" -Force
-```
-
-写入 `spec2md/{date}-{change-name}/article.md`，含完整 Markdown 内容和配图引用。
+写入 `spec2md/{date}-{change-name}/article.md`，含完整 Markdown 内容和配图引用（目录已在 Step 2.2 创建）。
 
 ## Step 4: 后处理
 
