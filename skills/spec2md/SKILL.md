@@ -166,12 +166,21 @@ D) 自定义
 
 整理为结构化素材摘要，inline 展示给用户快速确认。
 
-**3.2** 配图生成 — 按 Step 2.4 确认的配图计划，逐项调用 drawio-skill。
+**3.2** 配图生成 — 按 Step 2.4 确认的配图计划，对每种类型用以下模板构造提示词，然后加载 drawio-skill 委托生成：
 
-加载 drawio-skill 后，按 USAGE_CN.md 方式描述图表，不指定输出路径或格式：
+| 配图类型 | drawio 提示词模板 | 所需素材 |
+|---------|------------------|---------|
+| Architecture | 画一张「{title}」架构图。包含以下组件：{列出 change 涉及的所有模块/服务/组件}。展示它们之间的{调用/依赖/层级}关系。 | design.md 的架构决策、模块清单 |
+| Flow | 画一张「{title}」流程图。状态/步骤：{列出关键步骤或状态}。流转路径：{描述分支或决策条件}。 | design.md 的业务流程描述 |
+| ML/Deep Learning | 画一张「{title}」{ML/模型结构/训练管线}图。包含：{列出模型组件、数据管线阶段}。数据流向：{从 INPUT 到 OUTPUT 的路径}。 | design.md 的模型/数据管线描述 |
+| UML class | 画一张「{title}」UML 类图。类：{列出核心类/接口，每个标注关键字段和方法}。关系：{继承/实现/关联关系}。 | proposal.md/design.md 的接口和类型描述 |
+| Sequence | 画一张「{title}」时序图。参与者：{列出交互方}。关键交互：{按时间顺序列出消息/调用序列}。 | design.md 的交互/协议描述 |
+| ER | 画一张「{title}」ER 图。实体：{列出数据实体}。关系：{实体间的联系，外键关键字段}。 | design.md/change 的数据模型描述 |
+
+对每种确认的配图，先用当前 change 的素材填充模板，给出一段完整的自然语言描述，再加载 drawio-skill：
 
 ```
-请为「{change-name}」生成一张 {预设类型}。场景：{从 design.md/proposal.md 提取 1-2 句核心要点}
+加载 drawio-skill，让它画如下图表：{填充后的提示词}
 ```
 
 drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成后读取 drawio-skill 返回的文件路径，将它们复制到 `spec2md/{change-name}-{date}/`。
