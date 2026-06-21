@@ -220,14 +220,14 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png` 到 `$OU
 **3.4** 写作 — 整合以下元素生成文章：
 
 1. Step 3.1 的结构化素材
-2. Step 3.2 已确认的配图路径（`$OUTPUT_DIR/{change-name}-{type}.drawio.png`）
+2. Step 3.2 已确认的配图路径（相对路径 `{change-name}-{type}.drawio.png`）
 3. Step 2.2 的标题
 4. Step 3.3 确认的写作框架
 5. Step 2.5 选中 persona 的完整 yaml 内容（作为写作风格硬约束注入）
 6. `references/writing-guide.md` — 写作规范（反 AI 检测底线规则）
 7. `references/exemplar-seeds.yaml` — 范文种子（人类写作结构示范，作为 few-shot 注入）
 
-输出格式为完整 Markdown，配图使用 `![alt]($OUTPUT_DIR/{change-name}-{type}.drawio.png)`。
+输出格式为完整 Markdown，配图使用 `![alt]({change-name}-{type}.drawio.png)`。
 
 **写作自检**：每完成约 500 字（或每个 H2）执行 `references/realtime-check.md` 的 5 项检查，当场修复。
 
@@ -240,15 +240,15 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png` 到 `$OU
 **3.5.3 执行修改**：局部意见仅调整对应段落；全局意见一次性应用到全文。首次修改后展示变更段落（标注 `📝` + 前后各 1 句上下文），询问"需要看完整版还是只看改动？" 用户选"完整版"时展示全文，选"只看改动"时继续段落级展示。
 
 **3.5.4 确认定稿**：
-- 用户说"确认"、"定稿"、"可以"、"就这样"或明确表示同意 → 进入 3.6
+- 用户说"确认"、"定稿"、"可以"、"就这样"或明确表示同意 → 直接写入 `$OUTPUT_DIR/article.md`
 - 用户提出新修改意见 → 回到 3.5.2
 
-**🔴 CHECKPOINT — 定稿确认后将写入文件，后续修改需手动编辑。**
+**🔴 CHECKPOINT — 文章已写入 `$OUTPUT_DIR/`，后续修改需手动编辑。**
 
-**3.6** 写入最终文件：
+输出目录结构：
 
 ```
-spec2md/{date}-{change-name}/
+$OUTPUT_DIR/
 ├── article.md
 ├── {change-name}-architecture.drawio.png
 ├── {change-name}-flow.drawio.png
@@ -259,10 +259,6 @@ spec2md/{date}-{change-name}/
 ```
 
 仅包含 Step 3.2 实际生成的配图文件（drawio-skill 直接输出到 `$OUTPUT_DIR`）。
-
-`{change-name}` = 选中 changes 中第一个的目录名，`{date}` = 当天日期（YYYY-MM-DD）。
-
-写入 `$OUTPUT_DIR/article.md`，含完整 Markdown 内容和配图引用。
 
 ## Step 4: 后处理
 
@@ -311,7 +307,7 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 | 3.2 | 图片修改达 3 轮 | 强制接受或跳过 | 用户二选一 |
 | 3.5 | 用户反馈不明确 | 请求具体修改示例 | 使用当前版本作为最终稿 |
 | 3.5 | 调整循环超过 5 轮 | 询问是否接受当前版本或继续 | 用户选择决定 |
-| 3.6 | 写入失败 | 检查目录权限 | 输出文件内容到终端，告知手动保存 |
+| 3.5 | 写入失败 | 检查目录权限 | 输出文件内容到终端，告知手动保存 |
 | 4.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
 | 4.2 | append_readme.py 执行失败 | 检查 README.md 是否存在及可写 | 告知用户手动追加，继续回复 |
 | 全局 | 用户中断 | 输出当前进度提示 | 告知可用 `/spec2md` 重跑 |
@@ -325,9 +321,9 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 | 3 | 跳过 Step 2.4 配图决策 | 缺少关键配图 | 架构/流程变更至少生成一张图 |
 | 4 | 用户选了不合适的骨架 | 内容撑不起 | 在 question 选项中提供推荐理由辅助判断 |
 | 5 | 图片反复修改 >5 轮 | 边际收益递减 | 5 轮后强制接受或跳过 |
-| 6 | 将草案写入文件后再让用户修改 | 反复写文件浪费操作 | inline 展示全文，收集反馈后再写入 |
+| 6 | 将草案写入文件后再让用户修改 | 反复写文件浪费操作 | inline 展示草案，收集反馈确认后再写入 |
 | 7 | 修改后不重新展示全文 | 用户不知道改了哪里 | 每次调整后重新展示完整草案 |
-| 8 | 未获用户明确确认即写入文件 | 文章未定稿 | 等待用户确认后再写入 |
+| 8 | 未获用户明确确认即写入文件 | 文章未定稿 | Step 3.5.4 等待用户确认后再写入 |
 | 9 | Step 3.5 使用 question 工具 | 交互僵化、打断对话流 | 使用直接对话收集反馈 |
 | 10 | 调用 wewrite 或检查 WeChat 配置 | 加载不必要的依赖 | spec2md 仅输出 Markdown，不涉及发布 |
 
