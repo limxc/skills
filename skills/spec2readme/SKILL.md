@@ -245,6 +245,21 @@ Remove-Item -Recurse -Force $MMD_DIR -ErrorAction SilentlyContinue
 | 6.1 | position.py 失败 | 检查 JSON 可写 | 告知手动执行 |
 | 6.2 | append_readme.py 失败 | 检查 README.md 可写 | 告知手动追加 |
 
+## 反例黑名单
+
+以下行为在执行本 skill 时禁止出现，每条都对应真实踩过的坑或可预见的故障模式。
+
+| # | 反模式 | 后果 | 正确做法 |
+|---|--------|------|---------|
+| 1 | Step 4.1 跳过用户确认直接生成配图 | 素材方向不对，后续配图和文档全部重做，浪费 2-3 轮 | 循环问用户，直到收到"素材足够"或"跳过配图"的明确确认 |
+| 2 | Step 5.2 未经用户定稿确认就执行 position 更新和 README 追加 | 用户还没看完文档，position 已标记 processed，change 再也无法选中文档 | 用户必须说出"没问题/可以/定稿"等价关键词才进入 Step 6 |
+| 3 | 多 change 场景只配一种图（如只配 flowchart 不配 erDiagram） | 数据变更没有可视化，读者看不懂模型变化 | 按 Step 4.2 检测表逐项判断配图类型，每个 type 单独生成 |
+| 4 | 未等 creating-mermaid-diagrams 完成就清理 `$MMD_DIR` | 配图源码丢失，文档里 mermaid 块为空 | Step 6.3 清理必须在配图源码嵌入文档之后执行 |
+| 5 | 重复写入同一个 `$OUTPUT_FILE` 且不警告 | 覆盖历史文档，用户无法追溯 | 写入前检查 `Test-Path $OUTPUT_FILE`，存在则加 `-{n}` 后缀或用 question 确认覆盖 |
+| 6 | 文档堆砌 tasks.md 逐条列表 | 读者看到的是任务清单而不是技术叙事，可读性差 | 遵循 Step 5.1 原则：Why 先行 + What 用列表提炼 + Impact 单独标注 |
+| 7 | 配图堆在文档开头或末尾 | 图文脱节，读者需要来回翻 | 遵循 Step 5.1 原则：配图紧跟相关段落，一处内容一张图 |
+| 8 | 用户说"修改"时用 question 工具 | question 弹窗不适合多轮修改对话，用户无法自然表达修改意图 | Step 5.2 明确规定了用直接对话，不得使用 question 工具 |
+
 ## 脚本
 
 | 脚本 | 用途 |
