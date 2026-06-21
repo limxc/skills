@@ -120,11 +120,16 @@ D) 自定义
 
 选择 D 时，提示用户输入自定义标题。
 
-标题确认后，创建输出目录：
+标题确认后，创建输出目录并保存为变量 `$OUTPUT_DIR`：
 
 ```
-New-Item -ItemType Directory -Path "spec2md/{date}-{change-name}" -Force
+$changeName = "{change-name}"
+$date = Get-Date -Format "yyyy-MM-dd"
+$OUTPUT_DIR = "spec2md/$date-$changeName"
+New-Item -ItemType Directory -Path $OUTPUT_DIR -Force
 ```
+
+后续所有输出（配图、文章）直接写入 `$OUTPUT_DIR`。
 
 **2.3** 骨架匹配
 
@@ -178,7 +183,7 @@ C) 自定义
 ## Step 3: 素材提取 + 配图 + 框架 + 写作
 
 **Input**: Selected changes + confirmed title + skeleton + image plan + persona
-**Output**: Final article at `spec2md/{date}-{change-name}/article.md`
+**Output**: Final article at `$OUTPUT_DIR/article.md`
 
 **3.1** 素材提取 — 遍历每个选中的 change，读取：
 - `proposal.md` → Why（动机）/ What（内容）/ Impact（影响范围）
@@ -196,13 +201,13 @@ C) 自定义
 | Sequence | 画一张「{title}」时序图。参与者：{列出交互方}。关键交互：{按时间顺序列出消息/调用序列}。 | design.md 的交互/协议描述 |
 | ER | 画一张「{title}」ER 图。实体：{列出数据实体}。关系：{实体间的联系，外键关键字段}。 | design.md/change 的数据模型描述 |
 
-对每种确认的配图，先用当前 change 的素材填充模板，给出一段完整的自然语言描述，再加载 drawio-skill：
+对每种确认的配图，先用当前 change 的素材填充模板，给出一段完整的自然语言描述，再加载 drawio-skill，指定输出到 `$OUTPUT_DIR`：
 
 ```
-加载 drawio-skill，让它画如下图表：{填充后的提示词}
+加载 drawio-skill，让它画如下图表，输出到 $OUTPUT_DIR：{填充后的提示词}
 ```
 
-drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成后读取 drawio-skill 返回的文件路径，将它们复制到 `spec2md/{date}-{change-name}/`，并显示完整路径。
+drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png` 到 `$OUTPUT_DIR` 下，显示完整路径。
 
 所有配图生成后，逐张用 question 工具确认（单选）：A) 没问题 B) 修改（≤3 轮）C) 跳过。达 3 轮强制接受或跳过。
 
@@ -215,14 +220,14 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成
 **3.4** 写作 — 整合以下元素生成文章：
 
 1. Step 3.1 的结构化素材
-2. Step 3.2 已确认的配图路径（相对路径 `{change-name}-{type}.drawio.png`）
+2. Step 3.2 已确认的配图路径（`$OUTPUT_DIR/{change-name}-{type}.drawio.png`）
 3. Step 2.2 的标题
 4. Step 3.3 确认的写作框架
 5. Step 2.5 选中 persona 的完整 yaml 内容（作为写作风格硬约束注入）
 6. `references/writing-guide.md` — 写作规范（反 AI 检测底线规则）
 7. `references/exemplar-seeds.yaml` — 范文种子（人类写作结构示范，作为 few-shot 注入）
 
-输出格式为完整 Markdown，配图使用 `![alt]({change-name}-{type}.drawio.png)`。
+输出格式为完整 Markdown，配图使用 `![alt]($OUTPUT_DIR/{change-name}-{type}.drawio.png)`。
 
 **写作自检**：每完成约 500 字（或每个 H2）执行 `references/realtime-check.md` 的 5 项检查，当场修复。
 
@@ -253,15 +258,15 @@ spec2md/{date}-{change-name}/
 └── {change-name}-ml.drawio.png
 ```
 
-仅包含 Step 3.2 实际生成的配图文件（drawio-skill 返回了哪些就复制哪些）。
+仅包含 Step 3.2 实际生成的配图文件（drawio-skill 直接输出到 `$OUTPUT_DIR`）。
 
 `{change-name}` = 选中 changes 中第一个的目录名，`{date}` = 当天日期（YYYY-MM-DD）。
 
-写入 `spec2md/{date}-{change-name}/article.md`，含完整 Markdown 内容和配图引用（目录已在 Step 2.2 创建）。
+写入 `$OUTPUT_DIR/article.md`，含完整 Markdown 内容和配图引用。
 
 ## Step 4: 后处理
 
-**Input**: Final article written to `spec2md/{date}-{change-name}/`
+**Input**: Final article written to `$OUTPUT_DIR/`
 **Output**: Position updated + user reply
 
 **🔴 CHECKPOINT — 执行后 changes 标记 processed，需 unskip 才可重新纳入。确认文章已写入再执行。**
@@ -281,7 +286,7 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <arti
 **4.3** 回复用户（汇总）：
 
 - 最终标题：`{title}`
-- 文章路径：`spec2md/{date}-{change-name}/article.md`
+- 文章路径：`$OUTPUT_DIR/article.md`
 - 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
 - 配图：N 张（architecture / flow / ...）
 - 写作框架：`{framework-name}`
