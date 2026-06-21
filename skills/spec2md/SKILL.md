@@ -185,12 +185,34 @@ C) 自定义
 **Input**: Selected changes + confirmed title + skeleton + image plan + persona
 **Output**: Final article at `$OUTPUT_DIR/article.md`
 
-**3.1** 素材提取 — 遍历每个选中的 change，读取：
+**3.1** 素材提取
+
+**Input**: Selected changes
+**Output**: Material summary + user confirmation on supplement needs
+
+遍历每个选中的 change，读取：
 - `proposal.md` → Why（动机）/ What（内容）/ Impact（影响范围）
 - `design.md` → Context（背景）/ Decisions（决策与权衡）/ Trade-offs
 - `tasks.md` → 完成清单（checklist）
 
-提取完成后，以摘要形式展示，用 question 工具询问用户是否需要补充素材。
+提取完成后，**必须**以摘要形式展示以下信息：
+- 每个 change 的核心结论（1-2 句话）
+- 涉及的主要模块/组件/接口
+- 关键决策与权衡
+- 已识别的配图素材是否充分
+
+随后**必须使用 question 工具**询问用户是否需要补充素材：
+
+```
+选项：
+A) 素材足够，继续生成配图
+B) 需要补充素材（请在下一步输入补充内容）
+C) 先不补充，跳过配图直接进入写作
+```
+
+选择 B 时，使用对话收集用户的补充素材，将补充内容合并到摘要中，并**重新使用 question 工具**确认是否继续。
+
+**🔴 CHECKPOINT — 未经用户确认素材范围，不得进入 Step 3.2。**
 
 **3.2** 配图生成 — 按 Step 2.4 确认的配图计划，对每种类型用以下模板构造提示词，然后加载 drawio-skill 委托生成：
 
