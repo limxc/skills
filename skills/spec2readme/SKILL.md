@@ -60,7 +60,19 @@ npm install -g @mermaid-js/mermaid-cli
 ```
 安装后重新运行本 skill。
 
-**1.3** creating-mermaid-diagrams skill 检查：
+**1.3** Chrome 运行环境检查（mmdc 依赖 puppeteer/Chrome）：
+
+```
+npx puppeteer browsers list 2>&1 | Select-String -Pattern "chrome-headless-shell"
+```
+
+不存在或列表为空 → 自动安装：
+```
+npx puppeteer browsers install chrome-headless-shell
+```
+无需终止，安装完成后继续。
+
+**1.4** creating-mermaid-diagrams skill 检查：
 
 ```
 npx skills ls -g 2>&1 | Select-String -Pattern "creating-mermaid-diagrams"
@@ -72,7 +84,7 @@ npx skills add https://github.com/Agents365-ai/mermaid-skill
 ```
 安装后重新运行本 skill。
 
-**1.4** position 状态：
+**1.5** position 状态：
 
 ```
 python <skill-dir>/scripts/position.py status
@@ -248,8 +260,9 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 |------|---------|---------|------|
 | 1.1 | openspec/ 不存在 | `..` 层级重试 | 提示终止 |
 | 1.2 | mmdc 未安装 | `npm install -g @mermaid-js/mermaid-cli` | 终止 |
-| 1.3 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
-| 1.4 | 无 pending changes | unskip 选项 | 终止 |
+| 1.3 | puppeteer Chrome 未安装 | `npx puppeteer browsers install chrome-headless-shell` | 自动安装，不终止 |
+| 1.4 | creating-mermaid-diagrams 不在 `npx skills ls -g` 输出中 | `npx skills add` 安装 | 终止 |
+| 1.5 | 无 pending changes | unskip 选项 | 终止 |
 | 3.2 | change 目录缺 `.openspec.yaml` 或 `created:` 字段 | 检查 change 目录结构 | 终止（change 结构不完整） |
 | 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
 | 4.3 | creating-mermaid-diagrams 加载失败 | 重新加载 | 跳过配图 |
