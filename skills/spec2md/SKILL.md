@@ -1,9 +1,9 @@
 ---
 name: spec2md
 description: >-
-    Generate Markdown articles from Comet development archives.
-    Use this skill whenever the user says /spec2md, wants to write an article
-    from completed changes, or summarize development work.
+Generate Markdown articles from OpenSpec change archives.
+     Use this skill whenever the user says /spec2md, wants to write an article
+     from completed changes, or summarize development work.
     Delegates to drawio-skill for architectural and flow diagrams.
 metadata:
     version: 2.0.0
@@ -16,12 +16,12 @@ metadata:
         - url: https://github.com/anomalyco/opencode
           name: Comet
           type: skill
-          note: Prerequisite — produces the archive changes consumed by this skill
+           note: Comet workflow creates the OpenSpec change archives consumed by this skill
 ---
 
-# /spec2md — Generate Markdown Articles from Comet Archives
+# /spec2md — Generate Markdown Articles from OpenSpec Archives
 
-Converts Comet development archives into Markdown articles with diagrams. Four-step workflow: environment check → change selection + writing discussion → material extraction + diagram + writing → post-processing.
+Converts OpenSpec change archives into Markdown articles with diagrams. Four-step workflow: environment check → change selection + writing discussion → material extraction + diagram + writing → post-processing.
 
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
 **交互层级：Step 2.1 / 2.3 / 3.3 使用 question 工具；Step 3.5.x（草案展示 → 反馈 → 修改 → 定稿）使用直接对话，不得使用 question 工具。**
@@ -30,12 +30,12 @@ Converts Comet development archives into Markdown articles with diagrams. Four-s
 Step 1  环境检查（openspec + drawio）+ position 读取
 Step 2  Change 选择 + 写作讨论（标题/骨架/配图/人格）
 Step 3  素材提取 + drawio 配图 + 框架 + 写作 + 草案交互 → 定稿
-Step 4  position 更新 + history 记录 + README 时间线追加 + 回复
+Step 4  position 更新 + README 时间线追加 + 回复
 ```
 
 ## Step 1: 环境检查
 
-**Input**: Comet project with `openspec/changes/` or `archive/`
+**Input**: OpenSpec project with `openspec/changes/` or `archive/`
 **Output**: Ready env + pending change list
 
 **1.1** openspec 结构检查：
@@ -44,7 +44,7 @@ Step 4  position 更新 + history 记录 + README 时间线追加 + 回复
 Test-Path -LiteralPath "openspec/changes/" -PathType Container
 ```
 
-存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "Comet 项目结构未找到。请在已初始化 Comet（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
+存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
 
 **1.2** drawio-skill 依赖检查：
 
@@ -149,9 +149,7 @@ D) 自定义
 
 **2.5.1** 读取 `references/persona-selection.md`，按匹配表规则（选题关键词 → 首选/次选人格）推荐 top 2 并说明推荐理由。
 
-**2.5.2** 读取 `<skill-dir>/history.yaml`（不存在则跳过），获取最近 3 篇的 `writing_persona` 字段，对相同人格降权（确保风格多样化）。
-
-**2.5.3** 自动选择人格，不再 question 确认。按推荐顺序取 top 1，如果 top 1 与最近 3 篇已使用的任何人格相同则顺延到 top 2。选择结果在 Step 4.4 回复中告知用户。用户可在 Step 3.5 草案阶段要求更换人格。
+**2.5.2** 自动选择人格，不再 question 确认。按推荐顺序取 top 1。选择结果在 Step 4.3 回复中告知用户。用户可在 Step 3.5 草案阶段要求更换人格。
 
 ## Step 3: 素材提取 + 配图 + 框架 + 写作
 
@@ -251,7 +249,7 @@ New-Item -ItemType Directory -Path "spec2md/{change-name}-{date}" -Force
 ## Step 4: 后处理
 
 **Input**: Final article written to `spec2md/{change-name}-{date}/`
-**Output**: Position updated + history recorded + user reply
+**Output**: Position updated + user reply
 
 **🔴 CHECKPOINT — 执行后 changes 标记 processed，需 unskip 才可重新纳入。确认文章已写入再执行。**
 
@@ -261,39 +259,13 @@ New-Item -ItemType Directory -Path "spec2md/{change-name}-{date}" -Force
 python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-N>
 ```
 
-**4.2** 更新 `<skill-dir>/history.yaml`（不存在则创建），追加本次写作记录：
+**4.2** README 需求时间线追加：
 
-```yaml
-- date: "<YYYY-MM-DD>"
-  title: "<final-title>"
-  writing_persona: "<selected-persona-name>"
-  skeleton: "<selected-skeleton>"
-  image_types: ["<type-1>", "<type-2>"]
+```
+python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" <article-dir>
 ```
 
-**4.3** README 需求时间线追加：
-
-```powershell
-$readmePath = Join-Path $projectRoot "README.md"
-$linkEntry = "- [$title - $date](spec2md/$articleDir/article.md)"
-$sectionHeader = "## 需求时间线"
-
-if (-not (Test-Path $readmePath)) {
-    "`n$sectionHeader`n`n$linkEntry" | Set-Content $readmePath
-} else {
-    $content = Get-Content $readmePath -Raw
-    if ($content -match "$sectionHeader[\s\S]*?(?=\n## |\z)") {
-        $section = $matches[0]
-        $newSection = "$section`n$linkEntry"
-        $content = $content.Replace($section, $newSection)
-        Set-Content $readmePath $content
-    } else {
-        Add-Content $readmePath "`n$sectionHeader`n`n$linkEntry"
-    }
-}
-```
-
-**4.4** 回复用户（汇总）：
+**4.3** 回复用户（汇总）：
 
 - 最终标题：`{title}`
 - 文章路径：`spec2md/{change-name}-{date}/article.md`
@@ -301,7 +273,6 @@ if (-not (Test-Path $readmePath)) {
 - 配图：N 张（architecture / flow / ...）
 - 写作人格：`{persona-name}`
 - ✅ position 已更新
-- ✅ history.yaml 已记录
 - ✅ 需求时间线已追加
 - 下次运行不再显示已 processed 的 changes
 
@@ -323,15 +294,14 @@ if (-not (Test-Path $readmePath)) {
 | 3.5 | 调整循环超过 5 轮 | 询问是否接受当前版本或继续 | 用户选择决定 |
 | 3.6 | 写入失败 | 检查目录权限 | 输出文件内容到终端，告知手动保存 |
 | 4.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
-| 4.2 | history.yaml 写入失败 | 检查目录权限 | 跳过记录，继续回复 |
-| 4.3 | README 时间线追加失败 | 检查 README.md 是否存在及可写 | 告知用户手动追加，继续回复 |
+| 4.2 | append_readme.py 执行失败 | 检查 README.md 是否存在及可写 | 告知用户手动追加，继续回复 |
 | 全局 | 用户中断 | 输出当前进度提示 | 告知可用 `/spec2md` 重跑 |
 
 ## 反例与黑名单
 
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
-| 1 | 在非 Comet 项目中使用 | 无 changes，position.py 报错 | Step 1.1 目录探测自动检查并退出 |
+| 1 | 在非 OpenSpec 项目中使用 | 无 changes，position.py 报错 | Step 1.1 目录探测自动检查并退出 |
 | 2 | 手动编辑 `.wechat-article-position.json` | 状态不一致 | 只用 `position.py` |
 | 3 | 跳过 Step 2.4 配图决策 | 缺少关键配图 | 架构/流程变更至少生成一张图 |
 | 4 | 单 change 用"时间线复盘"骨架 | 内容撑不起 | 单 change 用 SCQA |
@@ -347,6 +317,7 @@ if (-not (Test-Path $readmePath)) {
 | 脚本 | 用途 |
 |------|------|
 | `scripts/position.py` | `status` / `pending` / `processed` / `skipped` / `unskip` / `list` / `reset` |
+| `scripts/append_readme.py` | 向 README.md 需求时间线追加文章链接 |
 
 位置文件：`<project-root>/.wechat-article-position.json`
 环境变量：`$env:SPEC2MD_PROJECT_ROOT` — 显式设置项目根路径
@@ -354,13 +325,10 @@ if (-not (Test-Path $readmePath)) {
 ## 引用参考
 
 - drawio-skill `SKILL.md` — Step 3.2 委托指令
-- `references/drawio-usage.md` — drawio-skill 中文使用方式（prompt 风格参考）
-- `references/drawio-style-presets.md` — drawio-skill 样式预设管理
-- Comet `.comet.yaml` — change 元数据格式
+- `.comet.yaml` — change 元数据格式
 - `personas/*.yaml` — 写作人格定义（YAML 格式，含 voice_density / uncertainty_rate / emotional_arc 等参数）
 - `references/persona-selection.md` — 人格选择指南与匹配表
 - `references/writing-guide.md` — 反 AI 检测写作规范
 - `references/realtime-check.md` — 分段自检规则
 - `references/exemplar-seeds.yaml` — 范文种子
 - `references/frameworks.md` — 写作框架库
-- `history.yaml` — 写作历史记录（用于人格降权/多样化）

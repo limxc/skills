@@ -1,10 +1,10 @@
 # spec2md
 
-从 Comet 开发归档生成 Markdown 文章。
+从 OpenSpec 变更归档生成 Markdown 文章。
 
 ## 功能
 
-完成 Comet 工作流变更后，`/spec2md` 读取已归档的 change，使用写作人格生成总结文章（含 drawio 配图），经用户确认后输出到项目 `docs/` 目录。
+完成 Comet 工作流变更后，`/spec2md` 读取已归档的 change，使用写作人格生成总结文章（含 drawio 配图），经用户确认后输出到项目 `spec2md/` 目录。
 
 ## 使用
 
@@ -16,9 +16,9 @@
 1. 检测依赖（openspec、drawio-skill、draw.io CLI）
 2. 查找未处理的归档 change
 3. 用户选择 change、标题、骨架、配图、写作人格
-4. 人格记忆注入 + drawio-skill 生成示意图
+4. 写作人格 + drawio-skill 生成示意图
 5. 写作 → 草案展示 → 直接对话修改 → 定稿
-6. 输出到 `docs/{change-name}-{date}/`
+6. 输出到 `spec2md/{change-name}-{date}/`
 
 ## 输入交互
 
@@ -32,13 +32,13 @@
 
 ## 输出
 
-生成的文件位于项目根目录的 `docs/{change-name}-{date}/` 文件夹。
+生成的文件位于项目根目录的 `spec2md/{change-name}-{date}/` 文件夹。
 
 ## 依赖
 
 - Python 3.8+
 - draw.io Desktop CLI（`drawio --version`）
-- Comet 工作流（用于产生归档 change）
+- Comet 工作流（用于产生 OpenSpec 归档 change）
 
 ## 外部 Skill 依赖
 

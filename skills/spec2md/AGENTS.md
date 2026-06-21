@@ -4,7 +4,8 @@
 - `/spec2md`
 
 ## Key Scripts
-- `scripts/position.py` — `status`, `pending`, `processed`, `skipped`, `unskip`, `list`, `reset`
+- `scripts/position.py` — `status`, `pending`, `processed`, `skipped`, `unskip`, `list`, `reset` (track position across OpenSpec changes)
+- `scripts/append_readme.py` — append article link to README.md 需求时间线 section
 
 ## Position Tracking
 - File: `<project-root>/.wechat-article-position.json`
