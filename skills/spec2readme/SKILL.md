@@ -44,7 +44,9 @@ Step 6  position 更新 + README 追加 + 回复
 Test-Path -LiteralPath "openspec/" -PathType Container
 ```
 
-存在则继续；不存在提示并在 `..` 层级重试一次。仍不存在则输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
+存在 → 继续。
+不存在 → 提示并在 `..` 层级重试一次。
+仍不存在 → 输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
 
 **1.2** mmdc 检查（creating-mermaid-diagrams 语法校验所需）：
 
@@ -77,8 +79,10 @@ python <skill-dir>/scripts/position.py status
 python <skill-dir>/scripts/position.py pending
 ```
 
-- 无 pending changes → 展示所有 changes（含 processed/skipped 标记），询问是否 `unskip` 恢复。用户无操作则退出。
 - 有 pending changes → 展示清单，询问：A) 开始文档 B) 仅查看。
+- 无 pending changes → 展示所有 changes（含 processed/skipped 标记），询问是否 `unskip` 恢复。
+  - 用户确认 unskip → 恢复后继续。
+  - 用户无操作或拒绝 → 退出。
 
 ## Step 2: Change 选择
 
@@ -91,6 +95,8 @@ python <skill-dir>/scripts/position.py pending
 - **略过** → 不标记，下次继续显示
 
 pending changes ≥ 5 时先问批量操作：全部写 / 全部略过 / 逐项确认。
+
+如果某个 change 缺少 `proposal.md` → 标记该 change 为 skipped，记录到日志，继续下一个。不要因为一个 change 缺失就中断整个流程。
 
 ## Step 3: 标题 + 输出文件名确认
 
@@ -151,6 +157,8 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 | 状态机/生命周期 | stateDiagram-v2 |
 
 逐项用 question 确认：A) 生成 B) 跳过。
+
+如果 creating-mermaid-diagrams skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
 **4.3** 加载 creating-mermaid-diagrams skill，用以下模板构造提示词生成配图源码：
 
@@ -222,13 +230,20 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTP
 Remove-Item -Recurse -Force $MMD_DIR -ErrorAction SilentlyContinue
 ```
 
+如果 `position.py processed` 失败（JSON 文件不可写）→ 输出失败原因，告知用户手动执行：
+```
+python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
+```
+
+如果 `append_readme.py` 失败（README.md 不可写或不存在）→ 输出失败原因，告知用户手动追加链接到 README.md 的 `## 项目文档` 节。
+
 **6.4** 回复用户（汇总）：
 - 标题：`{title}`
 - 文档路径：`$OUTPUT_FILE`
 - 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
 - Mermaid 图表：N 个（flowchart / sequence / ...）
-- ✅ position 已更新
-- ✅ README.md 项目文档已追加
+- ✅ position 已更新（或 ❌ 需手动执行）
+- ✅ README.md 项目文档已追加（或 ❌ 需手动追加）
 
 ## 异常与边界处理
 
