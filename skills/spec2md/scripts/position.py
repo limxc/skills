@@ -5,7 +5,7 @@ Tracks which OpenSpec changes have been processed or skipped for articles.
 Uses change folder names (from openspec/changes/ or openspec/changes/archive/)
 as stable identifiers — works across archive moves.
 
-Position file: <project-root>/.spec2md-position.json
+Position file: <skill-dir>/.spec2md-position.json
 """
 
 import argparse
@@ -25,34 +25,13 @@ class Position:
     updated_at: Optional[str] = None
 
 
-POSITION_FILE = ".spec2md-position.json"
-
-
-def _find_project_root() -> Path:
-    """Walk up from cwd to find project root.
-
-    Checks for markers: .git, .openspec.yaml, openspec/ (as dir).
-    Falls back to cwd if none found.
-    """
-    root_override = Path(os.environ.get("SPEC2MD_PROJECT_ROOT", ""))
-    if root_override.is_dir():
-        return root_override.resolve()
-
-    cwd = Path.cwd().resolve()
-    for parent in [cwd] + list(cwd.parents):
-        if (parent / ".git").is_dir():
-            return parent
-        if (parent / ".openspec.yaml").is_file():
-            return parent
-        if (parent / "openspec").is_dir():
-            return parent
-    return cwd
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_DIR = SCRIPT_DIR.parent
+POSITION_FILE = SKILL_DIR / ".spec2md-position.json"
 
 
 def get_position_path(project_root: Optional[Path] = None) -> Path:
-    if project_root is None:
-        project_root = _find_project_root()
-    return project_root / POSITION_FILE
+    return POSITION_FILE
 
 
 def read_position(project_root: Optional[Path] = None) -> Position:
@@ -61,7 +40,6 @@ def read_position(project_root: Optional[Path] = None) -> Position:
         return Position()
     try:
         data = json.loads(pos_path.read_text(encoding="utf-8"))
-        # Migrate legacy single-position format
         if "last_change_dir" in data and data["last_change_dir"]:
             if data["last_change_dir"] not in data.get("processed", []):
                 data.setdefault("processed", []).append(data["last_change_dir"])
