@@ -226,13 +226,15 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成
 ```
 spec2md/{change-name}-{date}/
 ├── article.md
-├── {change-name}-architecture.drawio.png   (如生成)
-├── {change-name}-flow.drawio.png          (如生成)
-├── {change-name}-sequence.drawio.png      (如生成)
-├── {change-name}-uml.drawio.png           (如生成)
-├── {change-name}-er.drawio.png            (如生成)
-└── {change-name}-ml.drawio.png            (如生成)
+├── {change-name}-architecture.drawio.png
+├── {change-name}-flow.drawio.png
+├── {change-name}-sequence.drawio.png
+├── {change-name}-uml.drawio.png
+├── {change-name}-er.drawio.png
+└── {change-name}-ml.drawio.png
 ```
+
+仅包含 Step 3.2 实际生成的配图文件（drawio-skill 返回了哪些就复制哪些）。
 
 `{change-name}` = 选中 changes 中第一个的目录名，`{date}` = 当天日期（YYYY-MM-DD）。
 
