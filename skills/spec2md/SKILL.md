@@ -220,14 +220,14 @@ drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png` 到 `$OU
 **3.4** 写作 — 整合以下元素生成文章：
 
 1. Step 3.1 的结构化素材
-2. Step 3.2 已确认的配图路径（相对路径 `{change-name}-{type}.drawio.png`）
+2. Step 3.2 已确认的配图（`$OUTPUT_DIR` 下 `{change-name}-{type}.drawio.png`）
 3. Step 2.2 的标题
 4. Step 3.3 确认的写作框架
 5. Step 2.5 选中 persona 的完整 yaml 内容（作为写作风格硬约束注入）
 6. `references/writing-guide.md` — 写作规范（反 AI 检测底线规则）
 7. `references/exemplar-seeds.yaml` — 范文种子（人类写作结构示范，作为 few-shot 注入）
 
-输出格式为完整 Markdown，配图使用 `![alt]({change-name}-{type}.drawio.png)`。
+输出格式为完整 Markdown，配图使用 `![alt]($OUTPUT_DIR/{change-name}-{type}.drawio.png)`。
 
 **写作自检**：每完成约 500 字（或每个 H2）执行 `references/realtime-check.md` 的 5 项检查，当场修复。
 
