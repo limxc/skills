@@ -7,6 +7,11 @@ description: >-
     from completed changes, generate a README from OpenSpec artifacts, or summarize
     development work into a readable document. Delegate to creating-mermaid-diagrams
     skill for architecture, flow, sequence, and other diagrams.
+    PROACTIVELY USE when the user mentions documenting changes, writing README,
+    creating technical docs from development work, or any time OpenSpec change
+    archives exist and would benefit from documentation. Do NOT wait for explicit
+    /spec2readme command — if changes are unprocessed and documentation is needed,
+    suggest using this skill.
 metadata:
     version: 1.0.0
     created: 2026-06-21
@@ -22,14 +27,14 @@ metadata:
 Converts OpenSpec change archives into Markdown documentation with Mermaid diagrams. Output goes to `spec2readme/{date}-{changeName}.md` and auto-updates the project's `README.md`.
 
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
-**交互层级：Step 1.4 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 5（定稿后修改请求）使用直接对话，不得使用 question 工具。**
+**交互层级：Step 1.4 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 4.3 / 5.2 使用直接对话，不得使用 question 工具。**
 
 ```
 Step 1  环境检查（openspec + mmdc + creating-mermaid-diagrams）+ position 读取
 Step 2  Change 选择
 Step 3  标题 + 输出文件名确认
 Step 4  素材提取 + mermaid 配图
-Step 5  写作 → 写入文件 → 展示路径
+Step 5  写作 → 写入文件 → 确认定稿
 Step 6  position 更新 + README 追加 + 回复
 ```
 
@@ -70,7 +75,7 @@ npx skills add https://github.com/Agents365-ai/mermaid-skill
 ```
 安装后重新运行本 skill。
 
-**1.3** position 状态：
+**1.4** position 状态：
 
 ```
 python <skill-dir>/scripts/position.py status
@@ -162,9 +167,11 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 | C4 高层架构 | "画一个{系统名}的 C4 Context 图:用户→{系统}→{外部 API}" |
 | 甘特图/时间线 | "画一个{项目名}的甘特图:规划期→开发期→测试期" |
 
-让创建配图时输出的 `.mmd` 文件写入 `$MMD_DIR`。读取其内容，以 ` ```mermaid ` 代码块形式嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。
+在生成配图时，指定输出目录为 `$MMD_DIR`（这是相对于项目根目录的路径），让 creating-mermaid-diagrams skill 将 `.mmd` 文件写在此目录下。如果该 skill 的输出报告返回了文件路径，则从中读取 `.mmd` 内容；否则直接从 `$MMD_DIR` 下读取生成的 `.mmd` 文件。
 
-## Step 5: 写作 → 写入文件 → 展示路径
+以 ` ```mermaid ` 代码块形式将内容嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。配图的确认和修改使用直接对话，不得使用 question 工具。
+
+## Step 5: 写作 → 写入文件 → 确认定稿
 
 **Input**: Material summary + diagrams + title
 **Output**: Final document at `$OUTPUT_FILE`
@@ -174,14 +181,14 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 2. Step 4.3 生成的 mermaid 源码，以 ` ```mermaid ` 代码块嵌入对应段落之后
 3. Step 3.1 的标题
 
-撰写规范：
-- 每个 change 独立成节（H2），按时间/逻辑顺序排列
-- 每个 change 的 Why（动机）作为节内引言
-- What（变更内容）用列表或表格呈现
-- Impact（影响范围）单独标注
-- 关键决策与权衡用引用块 `> ` 突出
-- 配图嵌入在相关段落之后
-- 语言风格：技术文档，清晰简洁
+文档结构由内容自然决定，但应遵循以下原则：
+- **按时间/逻辑组织**：每个 change 独立成节（H2），按发生时间或逻辑依赖排列。文档不是 change 的简单堆砌——每个节应讲清楚"为什么做这事"和"带来了什么变化"。
+- **Why 先行**：每个 change 的动机作为节内引言，读者需要先理解背景才能理解具体变更。
+- **What 用列表**：变更内容用列表或表格呈现，保持简洁。不需要逐条罗列 tasks.md，而是提炼出有意义的变更点。
+- **Impact 单独标注**：影响范围单独标注，让读者一目了然哪些文件或能力被改动。
+- **关键决策用引用块**：用 `> ` 突出架构决策和权衡，与普通描述区分开。
+- **配图紧跟正文**：配图嵌入在相关段落之后，而不是堆在文档开头或末尾——图文脱节会大幅降低可读性。
+- **语言风格**：技术文档风格，清晰简洁，避免营销语气。不写"我们很高兴地宣布"这类废话。
 
 **5.2** 写入后展示绝对路径供用户查看：
 
@@ -189,7 +196,7 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 文档已生成：{Resolve-Path $OUTPUT_FILE}
 ```
 
-用户阅读后可提出修改请求（直接对话，不得使用 question）。如需修改，编辑文件后再次展示路径。
+用户阅读后可提出修改请求（直接对话，不得使用 question）。修改后重新展示路径。
 
 **🔴 CHECKPOINT — 必须用户明确确认"没问题"、"可以"、"定稿"或类似表示后，方可进入 Step 6。用户未确认前不得执行 position 更新或 README 追加。**
 
@@ -212,7 +219,7 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTP
 
 这会在 `README.md` 的 `## 项目文档` 节追加一条链接。无此节则自动创建。
 
-**6.3** 清理临时 `.mmd` 文件：
+**6.3** 清理临时 `.mmd` 文件（不影响结果，失败可忽略）：
 
 ```
 Remove-Item -Recurse -Force $MMD_DIR -ErrorAction SilentlyContinue
