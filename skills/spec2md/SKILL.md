@@ -88,8 +88,8 @@ python <skill-dir>/scripts/position.py pending
 **2.1** 展示 pending change 清单（`position.py pending` 输出的裸目录名列表）：
 
 ```
-1 | 2026-06-19-disk-space-analyzer
-2 | 2026-06-19-disk-analyzer-tests
+1 | 2026-06-20-migrate-to-drawio-skill
+2 | 2026-06-21-refactor-spec2md
 ```
 
 如需查看 change 详情（类型、描述），读取对应目录下的 `proposal.md` 后展示。
