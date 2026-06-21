@@ -169,7 +169,7 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 
 在生成配图时，指定输出目录为 `$MMD_DIR`（这是相对于项目根目录的路径），让 creating-mermaid-diagrams skill 将 `.mmd` 文件写在此目录下。如果该 skill 的输出报告返回了文件路径，则从中读取 `.mmd` 内容；否则直接从 `$MMD_DIR` 下读取生成的 `.mmd` 文件。
 
-以 ` ```mermaid ` 代码块形式将内容嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。配图的确认和修改使用直接对话，不得使用 question 工具。
+以 ` ```mermaid ` 代码块形式将内容嵌入后续 Markdown 文档。配图的修改在 Step 5.2 随文档一起确认。
 
 ## Step 5: 写作 → 写入文件 → 确认定稿
 
@@ -243,7 +243,6 @@ Remove-Item -Recurse -Force $MMD_DIR -ErrorAction SilentlyContinue
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
 | 4.3 | creating-mermaid-diagrams 加载失败 | 重新加载 | 跳过配图 |
-| 4.3 | 修改达 3 轮 | 强制接受或跳过 | 二选一 |
 | 5.2 | 写入失败 | 检查目录权限 | 输出内容到终端 |
 | 6.1 | position.py 失败 | 检查 JSON 可写 | 告知手动执行 |
 | 6.2 | append_readme.py 失败 | 检查 README.md 可写 | 告知手动追加 |
