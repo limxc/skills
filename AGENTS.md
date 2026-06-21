@@ -25,6 +25,8 @@ If the user later asks to install/move a skill to global or project, do so promp
 
 If a globally installed skill in `~\.agents\skills\` is modified, **automatically sync the changes** to the project's `skills/` directory (overwrite the project copy) if it exist.
 
+If a locally-created skill under `skills/` is modified, **automatically sync the changes** to `~\.agents\skills\<same-name>\` (overwrite the global copy) so the user doesn't need to ask.
+
 ## Modifying Installed Skills
 
 - **Never modify** the contents of any installed skill under `.agents/skills/` or `.opencode/skills/` if it was installed from an external source (e.g., `npx skills add`, git clone of a third-party repo)
