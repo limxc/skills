@@ -30,7 +30,7 @@ Converts Comet development archives into Markdown articles with diagrams. Four-s
 Step 1  环境检查（openspec + drawio）+ position 读取
 Step 2  Change 选择 + 写作讨论（标题/骨架/配图/人格）
 Step 3  素材提取 + drawio 配图 + 框架 + 写作 + 草案交互 → 定稿
-Step 4  position 更新 + history 记录 + 回复
+Step 4  position 更新 + history 记录 + README 时间线追加 + 回复
 ```
 
 ## Step 1: 环境检查
@@ -317,12 +317,14 @@ if (-not (Test-Path $readmePath)) {
 | 2.2 | 标题候选描述不佳 | 用户自定义 | 直接使用 change 名称 |
 | 2.3 | 骨架自动匹配不合理 | 用户手动选择 | 默认 SCQA |
 | 3.2 | drawio 导出失败 | 重试 1 次（简化描述） | 跳过配图，标注"生成失败" |
+| 3.2 | drawio-skill 加载失败 | 重新加载 drawio-skill | 跳过配图，纯文字输出 |
 | 3.2 | 图片修改达 3 轮 | 强制接受或跳过 | 用户二选一 |
 | 3.5 | 用户反馈不明确 | 请求具体修改示例 | 使用当前版本作为最终稿 |
 | 3.5 | 调整循环超过 5 轮 | 询问是否接受当前版本或继续 | 用户选择决定 |
 | 3.6 | 写入失败 | 检查目录权限 | 输出文件内容到终端，告知手动保存 |
 | 4.1 | position.py 执行失败 | 检查 JSON 文件可写 | 告知手动执行，继续回复 |
 | 4.2 | history.yaml 写入失败 | 检查目录权限 | 跳过记录，继续回复 |
+| 4.3 | README 时间线追加失败 | 检查 README.md 是否存在及可写 | 告知用户手动追加，继续回复 |
 | 全局 | 用户中断 | 输出当前进度提示 | 告知可用 `/spec2md` 重跑 |
 
 ## 反例与黑名单
