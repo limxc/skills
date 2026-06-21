@@ -350,6 +350,8 @@ if (-not (Test-Path $readmePath)) {
 ## 引用参考
 
 - drawio-skill `SKILL.md` — Step 3.2 委托指令
+- `references/drawio-usage.md` — drawio-skill 中文使用方式（prompt 风格参考）
+- `references/drawio-style-presets.md` — drawio-skill 样式预设管理
 - Comet `.comet.yaml` — change 元数据格式
 - `personas/*.yaml` — 写作人格定义（YAML 格式，含 voice_density / uncertainty_rate / emotional_arc 等参数）
 - `references/persona-selection.md` — 人格选择指南与匹配表
