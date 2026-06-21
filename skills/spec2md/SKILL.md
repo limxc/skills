@@ -166,22 +166,17 @@ D) 自定义
 
 整理为结构化素材摘要，inline 展示给用户快速确认。
 
-**3.2** 配图生成 — 按 Step 2.4 确认的配图计划，逐项调用 drawio-skill：
+**3.2** 配图生成 — 按 Step 2.4 确认的配图计划，逐项调用 drawio-skill。
 
-按以下模板构造 drawio 指令 → skill tool 加载 drawio-skill → 委托生成 → 自检修复 ≤2 轮：
+加载 drawio-skill 后，按 USAGE_CN.md 方式描述图表，不指定输出路径或格式：
 
-```markdown
-请为「{change-name}」生成一张 {预设类型}。
-场景：{从 design.md/proposal.md 提取 1-2 句核心要点}
-输出路径：{output-dir}/{change-name}-{type}.png
-要求：高清画质，Microsoft YaHei 字体，中文标注，简洁美观。
+```
+请为「{change-name}」生成一张 {预设类型}。场景：{从 design.md/proposal.md 提取 1-2 句核心要点}
 ```
 
-输出目录：`spec2md/{change-name}-{date}/`
+drawio-skill 会自动产出 `.drawio` 源文件和 `{name}.drawio.png`。生成后读取 drawio-skill 返回的文件路径，将它们复制到 `spec2md/{change-name}-{date}/`。
 
 每张图生成后，用 question 工具（单选）：A) 没问题 B) 修改（≤3 轮）C) 跳过。达 3 轮强制接受或跳过。
-
-保留 drawio 源文件到 `spec2md/{change-name}-{date}/{change-name}-{type}.drawio`。
 
 **🔴 CHECKPOINT — 以下配图将嵌入最终文章。确认前可修改，确认后需重跑才可替换。**
 
@@ -192,14 +187,14 @@ D) 自定义
 **3.4** 写作 — 整合以下元素生成文章：
 
 1. Step 3.1 的结构化素材
-2. Step 3.2 已确认的配图路径（相对路径 `{change-name}-{type}.png`）
+2. Step 3.2 已确认的配图路径（相对路径 `{change-name}-{type}.drawio.png`）
 3. Step 2.2 的标题
 4. Step 3.3 确认的写作框架
 5. Step 2.5 选中 persona 的完整 yaml 内容（作为写作风格硬约束注入）
 6. `references/writing-guide.md` — 写作规范（反 AI 检测底线规则）
 7. `references/exemplar-seeds.yaml` — 范文种子（人类写作结构示范，作为 few-shot 注入）
 
-输出格式为完整 Markdown，配图使用 `![alt]({change-name}-{type}.png)`。
+输出格式为完整 Markdown，配图使用 `![alt]({change-name}-{type}.drawio.png)`。
 
 **写作自检**：每完成约 500 字（或每个 H2）执行 `references/realtime-check.md` 的 5 项检查，当场修复。
 
@@ -222,12 +217,12 @@ D) 自定义
 ```
 spec2md/{change-name}-{date}/
 ├── article.md
-├── {change-name}-architecture.png   (如生成)
-├── {change-name}-flow.png          (如生成)
-├── {change-name}-sequence.png      (如生成)
-├── {change-name}-uml.png           (如生成)
-├── {change-name}-er.png            (如生成)
-└── {change-name}-ml.png            (如生成)
+├── {change-name}-architecture.drawio.png   (如生成)
+├── {change-name}-flow.drawio.png          (如生成)
+├── {change-name}-sequence.drawio.png      (如生成)
+├── {change-name}-uml.drawio.png           (如生成)
+├── {change-name}-er.drawio.png            (如生成)
+└── {change-name}-ml.drawio.png            (如生成)
 ```
 
 `{change-name}` = 选中 changes 中第一个的目录名，`{date}` = 当天日期（YYYY-MM-DD）。
