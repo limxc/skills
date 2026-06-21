@@ -9,7 +9,7 @@ metadata:
     version: 2.0.0
     created: 2026-06-20
     dependencies:
-        - url: https://github.com/Agents365-ai/365-skills
+        - url: https://github.com/Agents365-ai/drawio-skill
           name: drawio-skill
           type: skill
           note: Diagram generation (Step 3.2) via draw.io CLI export
@@ -53,7 +53,7 @@ Test-Path -LiteralPath "openspec/" -PathType Container
 Test-Path -LiteralPath "$env:USERPROFILE\.agents\skills\drawio-skill\"
 ```
 
-不存在 → `npx skills add Agents365-ai/365-skills -g` 安装后告知用户重启。
+不存在 → `npx skills add https://github.com/Agents365-ai/drawio-skill --skill drawio-skill` 安装后告知用户重启。
 
 draw.io CLI 检查：
 
@@ -218,12 +218,12 @@ C) 先不补充，跳过配图直接进入写作
 
 | 配图类型 | drawio 提示词模板 | 所需素材 |
 |---------|------------------|---------|
-| Architecture | 画一张「{title}」架构图。包含以下组件：{列出 change 涉及的所有模块/服务/组件}。展示它们之间的{调用/依赖/层级}关系。 | design.md 的架构决策、模块清单 |
-| Flow | 画一张「{title}」流程图。状态/步骤：{列出关键步骤或状态}。流转路径：{描述分支或决策条件}。 | design.md 的业务流程描述 |
-| ML/Deep Learning | 画一张「{title}」{ML/模型结构/训练管线}图。包含：{列出模型组件、数据管线阶段}。数据流向：{从 INPUT 到 OUTPUT 的路径}。 | design.md 的模型/数据管线描述 |
-| UML class | 画一张「{title}」UML 类图。类：{列出核心类/接口，每个标注关键字段和方法}。关系：{继承/实现/关联关系}。 | proposal.md/design.md 的接口和类型描述 |
-| Sequence | 画一张「{title}」时序图。参与者：{列出交互方}。关键交互：{按时间顺序列出消息/调用序列}。 | design.md 的交互/协议描述 |
-| ER | 画一张「{title}」ER 图。实体：{列出数据实体}。关系：{实体间的联系，外键关键字段}。 | design.md/change 的数据模型描述 |
+| Architecture | 画一张「{title}」架构图。包含以下组件：{列出 change 涉及的所有模块/服务/组件}。展示它们之间的{调用/依赖/层级}关系。布局要求：节点间距≥200px，行/列间留80px连线通道，坐标对齐10的倍数，文字用html=1渲染，连线使用正交路由+waypoints绕行避免穿越无关形状。 | design.md 的架构决策、模块清单 |
+| Flow | 画一张「{title}」流程图。状态/步骤：{列出关键步骤或状态}。流转路径：{描述分支或决策条件}。布局要求：节点间距≥200px，坐标对齐10的倍数，文字用html=1渲染，多连线节点的出入口均匀分布避免堆叠。 | design.md 的业务流程描述 |
+| ML/Deep Learning | 画一张「{title}」{ML/模型结构/训练管线}图。包含：{列出模型组件、数据管线阶段}。数据流向：{从 INPUT 到 OUTPUT 的路径}。布局要求：节点间距≥200px，坐标对齐10的倍数，文字用html=1渲染，连线使用正交路由避免交叉。 | design.md 的模型/数据管线描述 |
+| UML class | 画一张「{title}」UML 类图。类：{列出核心类/接口，每个标注关键字段和方法}。关系：{继承/实现/关联关系}。布局要求：类间距≥250px，坐标对齐10的倍数，文字用html=1渲染，继承线使用空心三角箭头。 | proposal.md/design.md 的接口和类型描述 |
+| Sequence | 画一张「{title}」时序图。参与者：{列出交互方}。关键交互：{按时间顺序列出消息/调用序列}。布局要求：参与者间距≥200px，消息线使用水平正交路由，文字用html=1渲染。 | design.md 的交互/协议描述 |
+| ER | 画一张「{title}」ER 图。实体：{列出数据实体}。关系：{实体间的联系，外键关键字段}。布局要求：实体间距≥250px，坐标对齐10的倍数，文字用html=1渲染，外键连线使用虚线样式。 | design.md/change 的数据模型描述 |
 
 对每种确认的配图，先用当前 change 的素材填充模板，给出一段完整的自然语言描述，再加载 drawio-skill，指定输出到 `$OUTPUT_DIR`：
 

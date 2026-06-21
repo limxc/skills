@@ -1,0 +1,3 @@
+- [x] 修正 SKILL.md 头部的 drawio-skill 依赖 URL 和 Step 1.2 的安装命令
+- [x] 优化 Step 3.2 的 6 种配图提示词模板，追加布局质量约束
+- [x] 验证：运行 spec2md 确认修改正确，同步到项目 skills/ 目录
