@@ -168,16 +168,12 @@ New-Item -ItemType Directory -Path $TMP_DIR -Force
 | C4 高层架构 | "画一个{系统名}的 C4 Context 图:用户→{系统}→{外部 API}" |
 | 甘特图/时间线 | "画一个{项目名}的甘特图:规划期→开发期→测试期" |
 
-加载 creating-mermaid-diagrams skill 并告知输出到 `$TMP_DIR`。优先使用 mmdc 导出 SVG，若 mmdc 不可用（未安装或 Chrome 版本不匹配）则告知使用 Kroki 导出。
-
-该 skill 会产出 `.mmd` 源文件和导出的 `.svg` 文件。对每张生成的 SVG，向用户展示完整绝对路径供预览：
+creating-mermaid-diagrams skill 运行完成后，从它的输出报告获取生成的 `.mmd` 和 `.svg` 文件路径，将它们移到 `$TMP_DIR`。对每张 SVG，向用户展示完整绝对路径供预览：
 ```
-已生成配图：{resolve-path $TMP_DIR/{diagram-name}}.svg
+已生成配图：{Resolve-Path "$TMP_DIR\{diagram-name}.svg"}
 ```
 
-读取 `.mmd` 文件内容，以 ` ```mermaid ` 代码块形式嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。
-
-临时文件（`.mmd`、`.svg`）在 Step 6 定稿后统一清理。
+读取 `.mmd` 文件内容，以 ` ```mermaid ` 代码块形式嵌入后续 Markdown 文档。所有配图生成后逐张展示确认（≤3 轮修改）。临时文件（`.mmd`、`.svg`）在 Step 6 定稿后统一清理。
 
 ## Step 5: 写作 + 草案交互
 
