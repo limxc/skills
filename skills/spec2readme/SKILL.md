@@ -225,10 +225,11 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 **6.2** 项目 README.md 追加：
 
 ```
-python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE
+python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <change-dir-1>
 ```
 
-这会在 `README.md` 的 `## 项目文档` 节追加一条链接。无此节则自动创建。
+这会在 `README.md` 的 `## 项目文档` 节追加一条带日期的链接（取自 change 目录的文件夹创建时间）。无此节则自动创建。
+多 change 场景：只传入第一个 change 目录名，日期取自该文件夹创建时间。
 
 **6.3** 清理临时 `.mmd` 文件（不影响结果，失败可忽略）：
 
