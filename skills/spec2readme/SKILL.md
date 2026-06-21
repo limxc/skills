@@ -264,6 +264,3 @@ python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTP
 
 位置文件：`<project-root>/spec2readme/.spec2readme-position.json`
 
-## 引用参考
-
-- creating-mermaid-diagrams skill — Step 4.3 委托指令
