@@ -23,6 +23,8 @@ metadata:
 
 Converts OpenSpec change archives into Markdown articles with diagrams. Four-step workflow: environment check → change selection + writing discussion → material extraction + diagram + writing → post-processing.
 
+**交互层级：Step 1.4 / 2.1 / 2.2 / 2.3 / 2.4 / 2.5 / 3.2 / 3.3 使用 question 工具；Step 3.5（草案展示 → 反馈 → 修改 → 定稿）使用直接对话，不得使用 question 工具。**
+
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
 
 ```
@@ -101,6 +103,7 @@ python <skill-dir>/scripts/position.py pending
 
 pending changes ≥ 5 时，在开始前先问一次「批量操作」：
 - **全部写文章** — 自动选中所有，跳过逐项确认
+- **全部略过** — 自动跳过所有，退出
 - **逐项确认** — 回退到逐项询问
 
 所有 change 处理完毕后，收集选中的 changes 列表传入 Step 2.2。
@@ -117,7 +120,12 @@ D) 自定义
 
 选择 D 时，提示用户输入自定义标题。
 
-**2.3** 骨架匹配 — 按以下规则自动推荐，用 question 工具让用户选择：
+**2.3** 骨架匹配
+
+**Input**: Selected changes list
+**Output**: Confirmed skeleton type
+
+按以下规则自动推荐，用 question 工具让用户选择：
 
 | 判定条件 | 推荐骨架 | 适用场景 |
 |---------|---------|---------|
@@ -136,7 +144,12 @@ C) 自定义
 
 **🔴 CHECKPOINT — 骨架确认后，以下步骤确定配图和写作风格。**
 
-**2.4** 配图计划 — 遍历选中的 changes，检查 `design.md` / `proposal.md`，自动检测所有匹配类型。逐项用 question 工具确认：
+**2.4** 配图计划
+
+**Input**: Selected changes with proposal.md、design.md
+**Output**: Confirmed image type list
+
+遍历选中的 changes，检查 `design.md` / `proposal.md`，自动检测所有匹配类型。逐项用 question 工具确认：
 
 | 检测到内容 | 推荐配图 | 说明 |
 |-----------|---------|------|
@@ -149,7 +162,10 @@ C) 自定义
 
 每项选项：A) 生成 B) 跳过。
 
-**2.5** 写作人格选择：
+**2.5** 写作人格选择
+
+**Input**: Selected changes content features
+**Output**: Selected persona name
 
 读取 `references/persona-selection.md`，按匹配表规则推荐 top 3，用 question 工具展示推荐理由和示例文字，让用户三选一。用户也可选择不使用人格或自定义人格。
 
