@@ -1,5 +1,5 @@
 workflow: full
-phase: build
+phase: verify
 context_compression: off
 build_mode: subagent-driven-development
 build_pause: null
@@ -7,7 +7,7 @@ subagent_dispatch: confirmed
 tdd_mode: direct
 review_mode: off
 isolation: branch
-verify_mode: null
+verify_mode: light
 auto_transition: true
 base_ref: 02b51e8523017df5f01d864cd399f35ee8558629
 design_doc: docs/superpowers/specs/2026-06-20-refactor-spec2md-design.md
