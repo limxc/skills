@@ -23,7 +23,7 @@ After a skill is created, **automatically install it globally**:
 
 If the user later asks to install/move a skill to global or project, do so promptly.
 
-If a globally installed skill in `~\.agents\skills\` is modified, **automatically sync the changes** to the project's `skills/` directory (overwrite the project copy) if it exist.
+If a globally installed skill in `~\.agents\skills\` is modified, **automatically sync the changes** to the project's `skills/` directory (overwrite the project copy) if it exists.
 
 If a locally-created skill under `skills/` is modified, **automatically sync the changes** to `~\.agents\skills\<same-name>\` (overwrite the global copy) so the user doesn't need to ask, and **notify the user** when sync is complete.
 
