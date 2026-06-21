@@ -120,6 +120,7 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 **Input**: Selected changes + title
 **Output**: Material summary + mermaid diagram source code
 
+
 **4.1** 强制素材提取与讨论（多轮对话，直至用户确认）
 
 遍历每个选中的 change，读取：
