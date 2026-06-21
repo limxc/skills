@@ -11,9 +11,7 @@ Entry date comes from git author date, or filesystem ctime as fallback.
 
 import os
 import re
-import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 
 
@@ -22,24 +20,17 @@ def _get_change_date(project_root, change_dir):
         project_root / "openspec" / "changes" / change_dir,
         project_root / "openspec" / "changes" / "archive" / change_dir,
     ]
-    change_path = None
     for p in candidates:
-        if p.is_dir():
-            change_path = p
-            break
-    if not change_path:
-        return ""
-    try:
-        r = subprocess.run(
-            ["git", "log", "--follow", "--diff-filter=A", "--format=%aI", "-1", "--", str(change_path)],
-            capture_output=True, text=True, cwd=project_root, timeout=10,
-        )
-        if r.returncode == 0 and r.stdout.strip():
-            return r.stdout.strip()[:10]
-    except Exception:
-        pass
-    ctime = change_path.stat().st_ctime
-    return datetime.fromtimestamp(ctime).strftime("%Y-%m-%d")
+        yaml_path = p / ".openspec.yaml"
+        if yaml_path.is_file():
+            try:
+                for line in yaml_path.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line.startswith("created:"):
+                        return line.split(":", 1)[1].strip()
+            except Exception:
+                pass
+    return ""
 
 
 def find_project_root() -> Path:
