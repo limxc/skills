@@ -84,6 +84,8 @@ python <skill-dir>/scripts/position.py pending
   - 用户确认 unskip → 恢复后继续。
   - 用户无操作或拒绝 → 退出。
 
+**🔴 CHECKPOINT — 环境准备就绪。展示 pending 清单给用户确认后，再进入 Step 2 Change 选择。若用户选择"仅查看"，到此为止不进后续步骤。**
+
 ## Step 2: Change 选择
 
 **Input**: Pending change list
@@ -97,6 +99,8 @@ python <skill-dir>/scripts/position.py pending
 pending changes ≥ 5 时先问批量操作：全部写 / 全部略过 / 逐项确认。
 
 如果某个 change 缺少 `proposal.md` → 标记该 change 为 skipped，记录到日志，继续下一个。不要因为一个 change 缺失就中断整个流程。
+
+**🔴 CHECKPOINT — Change 选择完毕。确认选中 changes 后再进入素材提取。如果选错，退回 Step 2 重选。**
 
 ## Step 3: 标题 + 输出文件名确认
 
@@ -206,6 +210,8 @@ New-Item -ItemType Directory -Path $MMD_DIR -Force
 **🔴 CHECKPOINT — 必须用户明确确认"没问题"、"可以"、"定稿"或类似表示后，方可进入 Step 6。用户未确认前不得执行 position 更新或 README 追加。**
 
 ## Step 6: 后处理
+
+**🔴 CHECKPOINT — 用户已定稿确认。即将执行 position 更新和 README 追加，这将标记 change 为已处理。确认继续？如用户反悔，此步前可停止。**
 
 **Input**: Final document at `$OUTPUT_FILE`
 **Output**: Position updated + README.md 项目文档 section appended
