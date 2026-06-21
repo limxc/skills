@@ -1,9 +1,9 @@
 ---
 name: spec2md
 description: >-
-Generate Markdown articles from OpenSpec change archives.
-     Use this skill whenever the user says /spec2md, wants to write an article
-     from completed changes, or summarize development work.
+    Generate Markdown articles from OpenSpec change archives.
+    Use this skill whenever the user says /spec2md, wants to write an article
+    from completed changes, or summarize development work.
     Delegates to drawio-skill for architectural and flow diagrams.
 metadata:
     version: 2.0.0
@@ -60,7 +60,6 @@ draw.io CLI 检查：
 ```
 
 不存在 → question 工具询问：A) 跳过配图，纯文字输出 B) 下载后重启。
-
 
 **1.3** position 状态：
 
