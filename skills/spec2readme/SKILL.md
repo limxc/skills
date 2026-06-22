@@ -41,13 +41,13 @@ Step 6  position 更新 + README 追加 + 回复
 
 **1.1** openspec 结构检查：
 
+运行：
 ```
-Test-Path -LiteralPath "openspec/" -PathType Container
+python <skill-dir>/scripts/check_openspec.py --try-parent
 ```
 
-存在 → 继续。
-不存在 → 提示并在 `..` 层级重试一次。
-仍不存在 → 输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
+- exit 0 → 继续。
+- exit 1 → 输出 "OpenSpec 项目结构未找到。请在已初始化 OpenSpec（含 openspec/changes/ 目录）的项目中运行本 skill。" 后退出。
 
 **1.2** 依赖环境检查（提前验证，避免进入交互后因缺少依赖而失败）：
 
@@ -214,7 +214,12 @@ change 内容摘要如下：
 
 **5.1** 整合以下元素生成完整文档并直接写入 `$OUTPUT_FILE`：
 
-写入前检查 `Test-Path $OUTPUT_FILE`，存在则用 question 确认覆盖或加 `-{n}` 后缀另存，避免覆盖历史文档。
+写入前检查文件是否已存在：
+```
+python -c "import sys; from pathlib import Path; sys.exit(0 if Path('$OUTPUT_FILE').exists() else 1)"
+```
+- exit 0 → 文件已存在，用 question 确认覆盖或加 `-{n}` 后缀另存。
+- exit 1 → 文件不存在，直接写入。
 1. Step 4.1 的结构化素材
 2. Step 4.3 生成的 mermaid 源码，以 ` ```mermaid ` 代码块嵌入对应段落之后
 3. Step 3.1 的标题
@@ -235,6 +240,8 @@ change 内容摘要如下：
 ```
 
 用户阅读后可提出修改请求（直接对话，不得使用 question）。修改后重新展示路径。
+
+用户说出"没问题"/"可以"/"定稿"/"就这样"等明确同意表达后，才进入 Step 6 执行 position 更新和 README 追加。在此之前只修改文档内容，不标记 change 为 processed。
 
 ## Step 6: 后处理
 
@@ -303,7 +310,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 | 2 | Step 5.2 未经用户定稿确认就执行 position 更新和 README 追加 | 用户还没看完文档，position 已标记 processed，change 再也无法选中文档 | 用户必须说出"没问题/可以/定稿"等价关键词才进入 Step 6 |
 | 3 | 多 change 场景只配一种图 / 忽略 creating-mermaid-diagrams 的推荐 | 数据变更没有可视化，读者看不懂模型变化 | 遵循 Step 4.2 推荐结果，逐项确认生成或跳过，不要漏掉推荐类型，也不要擅自跳过 |
 | 4 | 未等 creating-mermaid-diagrams 完成就清理 `$MMD_DIR` | 配图源码丢失，文档里 mermaid 块为空 | Step 6.3 清理必须在配图源码嵌入文档之后执行 |
-| 5 | 重复写入同一个 `$OUTPUT_FILE` 且不警告 | 覆盖历史文档，用户无法追溯 | 写入前检查 `Test-Path $OUTPUT_FILE`，存在则加 `-{n}` 后缀或用 question 确认覆盖 |
+| 5 | 重复写入同一个 `$OUTPUT_FILE` 且不警告 | 覆盖历史文档，用户无法追溯 | 写入前用 python 检查文件是否存在，存在则加 `-{n}` 后缀或用 question 确认覆盖 |
 | 6 | 文档堆砌 tasks.md 逐条列表 | 读者看到的是任务清单而不是技术叙事，可读性差 | 遵循 Step 5.1 原则：Why 先行 + What 用列表提炼 + Impact 单独标注 |
 | 7 | 配图堆在文档开头或末尾 | 图文脱节，读者需要来回翻 | 遵循 Step 5.1 原则：配图紧跟相关段落，一处内容一张图 |
 | 8 | 用户说"修改"时用 question 工具 | question 弹窗不适合多轮修改对话，用户无法自然表达修改意图 | Step 5.2 明确规定了用直接对话，不得使用 question 工具 |
@@ -314,6 +321,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 |------|------|
 | `scripts/position.py` | 位置追踪（status/pending/processed/skipped/unskip/list/reset） |
 | `scripts/append_readme.py` | 向 README.md 项目文档节追加链接 |
+| `scripts/check_openspec.py` | 检查当前目录是否为 OpenSpec 项目 |
 | `scripts/env_check.py` | 依赖环境检查（creating-mermaid-diagrams / mmdc / Chrome） |
 | `scripts/prepare_output.py` | 生成输出文件路径和临时目录 |
 | `scripts/get_change_date.py` | 从 change 目录的 `.openspec.yaml` 读取 `created:` 日期 |
