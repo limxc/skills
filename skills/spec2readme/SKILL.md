@@ -23,7 +23,8 @@ metadata:
 Converts OpenSpec change archives into Markdown documentation with Mermaid diagrams. Output goes to `spec2readme/{date}-{changeName}.md` and auto-updates the project's `README.md`.
 
 **约定：`<skill-dir>` = 本 SKILL.md 所在目录。**
-**交互层级：Step 1.4 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 5.2 使用直接对话，不得使用 question 工具。**
+**交互层级：Step 1.3 / 2 / 3 / 4.1 / 4.2 使用 question 工具；Step 5.2 使用直接对话，不得使用 question 工具。**
+**步骤进度：每完成一个 Step，输出 `✅ Step N 完成` 告知用户当前进度。**
 
 ```
 Step 1  环境检查（openspec + creating-mermaid-diagrams / mmdc 配图前置依赖）+ position 读取
@@ -60,9 +61,10 @@ python <skill-dir>/scripts/env_check.py
 - `creating-mermaid-diagrams` skill 是否已安装
 - `mmdc` CLI 是否可用
 - Puppeteer / Chrome headless shell 是否已安装（缺失则自动安装）
+- **mmdc 渲染实测**：生成一条最小 `.mmd` 并调用 mmdc 渲染为 PNG，验证完整管线（mmdc + Chrome）可用
 
 根据返回状态处理：
-- `ready: true` → 继续。
+- `ready: true`（含 `mmdc_render: true`）→ 继续。
 - `creating-mermaid-diagrams` 缺失 → 安装后重跑 `env_check.py`：
   ```
   npx skills add https://github.com/Agents365-ai/mermaid-skill
@@ -75,12 +77,9 @@ python <skill-dir>/scripts/env_check.py
   python <skill-dir>/scripts/env_check.py
   ```
   - 重跑后仍 `ready: false` → 告知用户跳过配图，进入纯文字模式。
+- `mmdc_render: false`（mmdc 已安装但渲染失败，`env_check.py` 会自动尝试安装 Chrome 并重试）→ 重试后仍失败则告知用户 mmdc 渲染不可用，改为 Kroki API 模式（Step 4.3 使用 `/kroki` 端点而非本地 mmdc 导出）。
 
-**1.3** Chrome 运行时检查（mmdc 依赖 puppeteer/Chrome）：
-
-由 `env_check.py` 自动检测并安装，无需额外手动操作。若自动安装失败，会提示跳过配图或使用纯文字输出。
-
-**1.4** position 状态：
+**1.3** position 状态：
 
 ```
 python <skill-dir>/scripts/position.py status
