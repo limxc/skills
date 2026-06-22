@@ -191,8 +191,6 @@ change 内容摘要如下：
 
 如果 `creating-mermaid-diagrams` skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
-如果 creating-mermaid-diagrams skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
-
 **4.3** 加载 creating-mermaid-diagrams skill，用以下模板构造提示词生成配图源码：
 
 | 配图类型 | 参考提示词 |
@@ -288,7 +286,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 | 1.3 | puppeteer Chrome 未安装 | `npx puppeteer browsers install chrome-headless-shell` | 自动安装，不终止 |
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 3.2 | change 目录缺 `.openspec.yaml` 或 `created:` 字段 | 检查 change 目录结构 | 终止（change 结构不完整） |
-| 2 | 缺 proposal.md | 标记 skipped | 跳过继续 |
+| 2 | 缺 proposal.md | 提示用户该 change 缺少关键素材，询问是否继续或跳过 | 用户选择跳过则继续下一个 change |
 | 4.3 | creating-mermaid-diagrams 加载失败 | 重新加载 | 跳过配图 |
 | 4.3 | mmdc 语法校验失败 | 根据错误信息修正 `.mmd` 后重试 | 重试仍失败则跳过该配图 |
 | 5.2 | 写入失败 | 检查目录权限 | 输出内容到终端 |
@@ -303,7 +301,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 |---|--------|------|---------|
 | 1 | Step 4.1 跳过用户确认直接生成配图 | 素材方向不对，后续配图和文档全部重做，浪费 2-3 轮 | 循环问用户，直到收到"素材足够"或"跳过配图"的明确确认 |
 | 2 | Step 5.2 未经用户定稿确认就执行 position 更新和 README 追加 | 用户还没看完文档，position 已标记 processed，change 再也无法选中文档 | 用户必须说出"没问题/可以/定稿"等价关键词才进入 Step 6 |
-| 3 | 多 change 场景只配一种图（如只配 flowchart 不配 erDiagram） | 数据变更没有可视化，读者看不懂模型变化 | 按 Step 4.2 检测表逐项判断配图类型，每个 type 单独生成 |
+| 3 | 多 change 场景只配一种图 / 忽略 creating-mermaid-diagrams 的推荐 | 数据变更没有可视化，读者看不懂模型变化 | 遵循 Step 4.2 推荐结果，逐项确认生成或跳过，不要漏掉推荐类型，也不要擅自跳过 |
 | 4 | 未等 creating-mermaid-diagrams 完成就清理 `$MMD_DIR` | 配图源码丢失，文档里 mermaid 块为空 | Step 6.3 清理必须在配图源码嵌入文档之后执行 |
 | 5 | 重复写入同一个 `$OUTPUT_FILE` 且不警告 | 覆盖历史文档，用户无法追溯 | 写入前检查 `Test-Path $OUTPUT_FILE`，存在则加 `-{n}` 后缀或用 question 确认覆盖 |
 | 6 | 文档堆砌 tasks.md 逐条列表 | 读者看到的是任务清单而不是技术叙事，可读性差 | 遵循 Step 5.1 原则：Why 先行 + What 用列表提炼 + Impact 单独标注 |
@@ -316,5 +314,10 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 |------|------|
 | `scripts/position.py` | 位置追踪（status/pending/processed/skipped/unskip/list/reset） |
 | `scripts/append_readme.py` | 向 README.md 项目文档节追加链接 |
+| `scripts/env_check.py` | 依赖环境检查（creating-mermaid-diagrams / mmdc / Chrome） |
+| `scripts/prepare_output.py` | 生成输出文件路径和临时目录 |
+| `scripts/get_change_date.py` | 从 change 目录的 `.openspec.yaml` 读取 `created:` 日期 |
+| `scripts/cleanup_mmd.py` | 清理临时 `.mmd` 目录 |
+| `scripts/utils.py` | `find_project_root()` / `resolve_change_path()` 共享工具函数 |
 
 位置文件：`<project-root>/spec2readme/.spec2readme-position.json`
