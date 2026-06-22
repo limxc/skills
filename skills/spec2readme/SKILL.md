@@ -172,7 +172,7 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 
 ```
 请根据以下 OpenSpec change 的内容，从 creating-mermaid-diagrams 支持的图表类型中，
-推荐最适合的 1-2 种配图类型：
+推荐最适合的 1-2 种配图类型，并说明推荐理由。
 
 可用的类型及适用场景：
 - flowchart：processes, pipelines, decisions
@@ -184,16 +184,29 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 - mindmap：topic breakdowns
 - C4Context：high-level architecture
 
-只返回推荐的类型列表，例如 ["flowchart"] 或 ["sequenceDiagram", "erDiagram"]。
+返回 JSON 数组，每项包含 type 和 reason，例如：
+[
+  {"type": "flowchart", "reason": "proposal.md 提到系统包含 Gateway/Order/Payment 服务及调用关系"},
+  {"type": "erDiagram", "reason": "design.md 提到 Order、User、Product 实体及外键关系"}
+]
+
 如果没有合适的配图类型，返回 []。
 
 change 内容摘要如下：
 {change_material_summary}
 ```
 
-得到推荐列表后：
+得到推荐列表后，先向用户展示推荐类型及对应理由：
+
+```
+根据 change 内容，推荐生成以下配图：
+1. flowchart —— 理由：...
+2. erDiagram —— 理由：...
+```
+
+然后逐项用 question 确认：A) 生成 B) 跳过。
+
 - 列表为空 → 询问用户是否手动指定配图类型，或跳过配图直接写作。
-- 列表非空 → 逐项用 question 确认：A) 生成 B) 跳过。
 
 如果 `creating-mermaid-diagrams` skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
