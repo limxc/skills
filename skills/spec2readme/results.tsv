@@ -1,0 +1,6 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-06-21T12:00	baseline	spec2readme	-	76.1	baseline	-	初始评估	dry_run
+2026-06-21T12:05	05fe4cf	spec2readme	76.1	77.3	keep	dim4	Step 3 / Step 4.2.3 补充 CHECKPOINT	dry_run
+2026-06-21T12:10	c2e23b9	spec2readme	77.3	79.7	keep	dim3	Step 1.2 if-then 三段式 fallback	dry_run
+2026-06-21T12:15	311530b	spec2readme	79.7	81.4	keep	dim5	移除软化措辞（建议/由内容自然决定）	dry_run
+2026-06-21T12:20	ea125de	spec2readme	81.4	84.2	keep	dim8	4.2.2-4.2.3 改为强制映射检查表，防止跳过核心方向	dry_run
