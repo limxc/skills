@@ -116,18 +116,6 @@ def main() -> int:
             "  npm install -g @mermaid-js/mermaid-cli"
         )
 
-    if not status["creating_mermaid_diagrams"]:
-        status["messages"].append(
-            "creating-mermaid-diagrams skill not found. Install with:\n"
-            "  npx skills add https://github.com/Agents365-ai/mermaid-skill"
-        )
-
-    if not status["mmdc"]:
-        status["messages"].append(
-            "mmdc CLI not found. Install with:\n"
-            "  npm install -g @mermaid-js/mermaid-cli"
-        )
-
     status["chrome"], status["chrome_install_attempted"] = check_chrome()
     if not status["chrome"]:
         status["messages"].append(
