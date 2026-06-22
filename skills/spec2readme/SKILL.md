@@ -288,19 +288,16 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 
 ## 异常与边界处理
 
+> 下表是**失败后的修复路径**。执行前要规避的反模式见“反例黑名单”。
+
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
-| 1.1 | openspec/ 不存在 | `python <skill-dir>/scripts/check_openspec.py --try-parent` | 提示终止 |
-| 1.2 | mmdc 或 creating-mermaid-diagrams 未安装 | 对应 `npm install` / `npx skills add` | 终止 |
-| 1.3 | puppeteer Chrome 未安装 | `python <skill-dir>/scripts/env_check.py` 自动安装 | 提示跳过配图或纯文字输出 |
-| 1.4 | 无 pending changes | unskip 选项 | 终止 |
-| 3.2 | change 目录缺 `.openspec.yaml` 或 `created:` 字段 | 检查 change 目录结构 | 终止（change 结构不完整） |
-| 2 | 缺 proposal.md | 提示用户该 change 缺少关键素材，询问是否继续或跳过 | 用户选择跳过则继续下一个 change |
-| 4.3 | creating-mermaid-diagrams 加载失败 | 重新加载 | 跳过配图 |
-| 4.3 | mmdc 语法校验失败 | 根据错误信息修正 `.mmd` 后重试 | 重试仍失败则跳过该配图 |
-| 5.2 | 写入失败 | 检查目录权限 | 输出内容到终端 |
-| 6.1 | position.py 失败 | 检查 JSON 可写 | 告知手动执行 |
-| 6.2 | append_readme.py 失败 | 检查 README.md 可写 | 告知手动追加 |
+| Step 1 | openspec/ 不存在 / 依赖未安装 / Chrome 缺失 | 运行 `check_openspec.py` / `env_check.py`，按提示安装 | 提示终止或跳过配图 |
+| Step 2 | 无 pending changes / 缺 proposal.md | 提供 unskip 选项 / 询问用户是否跳过 | 终止或跳过继续 |
+| Step 3 | change 目录结构不完整 | 检查 `.openspec.yaml` 和 `created:` 字段 | 终止 |
+| Step 4 | creating-mermaid-diagrams 加载失败 / mmdc 校验失败 | 重新加载 / 修正 `.mmd` | 跳过该配图或全部配图 |
+| Step 5 | 输出文件已存在 / 写入失败 | 确认覆盖或加 `-{n}` 后缀 / 检查目录权限 | 输出内容到终端 |
+| Step 6 | position / append_readme 写入失败 | 检查 JSON / README.md 可写 | 告知手动执行 |
 
 ## 反例黑名单
 
