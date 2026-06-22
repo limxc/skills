@@ -310,7 +310,7 @@ python <skill-dir>/scripts/cleanup_mmd.py $MMD_DIR
 - 文档路径：`$OUTPUT_FILE`
 - 覆盖 N 个 changes：`{change-name-1}`, `{change-name-2}`
 - Mermaid 图表：N 个（flowchart / sequence / ...）
-- ✅ position 已更新（或 ❌ position 更新更新失败）
+- ✅ position 已更新（或 ❌ position 更新失败）
 - ✅ README.md 项目文档已追加（或 ❌ README.md 项目文档追加失败）
 
 ## 异常与边界处理
@@ -322,7 +322,7 @@ python <skill-dir>/scripts/cleanup_mmd.py $MMD_DIR
 | Step 1 | openspec/ 不存在 / 依赖未安装 / Chrome 缺失 | 运行 `check_openspec.py` / `env_check.py` 检查并按提示安装 | 提示终止或跳过配图 |
 | Step 2 | 无 pending changes / 缺 proposal.md | 提供 unskip 选项 / 询问用户是否跳过 | 终止或跳过继续 |
 | Step 3 | change 目录结构不完整 | 检查 `.openspec.yaml` 和 `created:` 字段 | 终止 |
-| Step 4 | mmdc 渲染失败 / creating-mermaid-diagrams 生成异常 | 修正 `.mmd` / 重试生成 / 检查 prompt 模板 | 跳过全部配图，进入纯文字写作 |
+| Step 4 | mmdc 渲染失败 / creating-mermaid-diagrams 生成异常 | 修正 `.mmd` / 重试生成 / 检查 4.2.1 产出的完整 prompt 是否准确 | 跳过全部配图，进入纯文字写作 |
 | Step 5 | 输出文件已存在 / 写入失败 | 确认覆盖或加 `-{n}` 后缀 / 检查目录权限 | 输出内容到终端 |
 | Step 6 | position / append_readme 写入失败 | 检查 JSON / README.md 可写 | 告知手动执行 |
 
