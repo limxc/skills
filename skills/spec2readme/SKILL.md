@@ -166,28 +166,41 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 
 **4.2** 确定配图类型
 
-把 Step 4.1 提取到的素材（每个 change 的 `proposal.md` + `design.md` 摘要）加载给 `creating-mermaid-diagrams` skill，让它根据自身的 Diagram Types 表推荐最适合的 1-2 种配图类型。
+把 Step 4.1 提取到的素材（每个 change 的 `proposal.md` + `design.md` 摘要）加载给 `creating-mermaid-diagrams` skill，让它根据 change 内容和所属领域，推荐所有合适的配图类型。
 
 推荐 prompt 模板：
 
 ```
 请根据以下 OpenSpec change 的内容，从 creating-mermaid-diagrams 支持的图表类型中，
-推荐最适合的 1-2 种配图类型，并说明推荐理由。
+推荐所有合适的配图类型。不要人为限制数量，只要内容确实需要，就推荐。
 
-可用的类型及适用场景：
-- flowchart：processes, pipelines, decisions
-- sequenceDiagram：API calls, message passing
-- classDiagram：OOP models, data structures
-- erDiagram：database schemas
-- stateDiagram-v2：state machines, lifecycle
-- gantt：project timelines
-- mindmap：topic breakdowns
-- C4Context：high-level architecture
+对每一种推荐，必须输出：
+- type：图表类型
+- content：这张图应该画什么（具体组件 / 实体 / 参与方 / 状态 / 流程步骤等）
+- reason：为什么这个类型适合这段内容
 
-返回 JSON 数组，每项包含 type 和 reason，例如：
+可用的类型及适用场景（包括但不限于）：
+- flowchart：业务流程、系统架构、处理管线、决策分支
+- sequenceDiagram：协议交互、API 调用、消息传递
+- classDiagram：类 / 接口 / 继承 / OOP 模型
+- erDiagram：数据库 schema、实体关系
+- stateDiagram-v2：状态机、生命周期
+- gantt：项目时间线、里程碑
+- mindmap：主题拆解、知识组织
+- C4Context：高层系统上下文、用户与外部系统关系
+
+返回 JSON 数组，例如：
 [
-  {"type": "flowchart", "reason": "proposal.md 提到系统包含 Gateway/Order/Payment 服务及调用关系"},
-  {"type": "erDiagram", "reason": "design.md 提到 Order、User、Product 实体及外键关系"}
+  {
+    "type": "flowchart",
+    "content": "微服务电商架构：Mobile/Web → API Gateway → User/Order/Product/Payment 服务 → DB + Redis",
+    "reason": "proposal.md 描述系统拆分为多个服务并说明调用关系"
+  },
+  {
+    "type": "erDiagram",
+    "content": "电商核心实体：User、Order、OrderItem、Product 及其关系",
+    "reason": "design.md 定义了数据模型和实体间外键关系"
+  }
 ]
 
 如果没有合适的配图类型，返回 []。
@@ -196,12 +209,12 @@ change 内容摘要如下：
 {change_material_summary}
 ```
 
-得到推荐列表后，先向用户展示推荐类型及对应理由：
+得到推荐列表后，先向用户展示所有推荐：
 
 ```
 根据 change 内容，推荐生成以下配图：
-1. flowchart —— 理由：...
-2. erDiagram —— 理由：...
+1. flowchart —— 内容：... —— 理由：...
+2. erDiagram —— 内容：... —— 理由：...
 ```
 
 然后逐项用 question 确认：A) 生成 B) 跳过。
