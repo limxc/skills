@@ -3,10 +3,11 @@ name: spec2readme
 description: >-
     Generate Markdown documentation (READMEs, technical docs, changelogs)
     from OpenSpec change archives using Mermaid diagrams for illustrations.
-    Use this skill whenever the user says /spec2readme, wants to write documentation
-    from completed changes, generate a README from OpenSpec artifacts, or summarize
-    development work into a readable document. Delegate to creating-mermaid-diagrams
-    skill for architecture, flow, sequence, and other diagrams.
+    Use this skill whenever the user says /spec2readme, asks for README/技术文档/
+    文档化/changelog/变更总结, or wants to write documentation from completed
+    OpenSpec changes, generate a README from OpenSpec artifacts, or summarize
+    development work into a readable Markdown document. Always delegate diagram
+    generation to the creating-mermaid-diagrams skill.
 metadata:
     version: 1.0.0
     created: 2026-06-21
@@ -157,19 +158,38 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 
 选择 B 时，使用对话收集用户的补充素材，合并到摘要中，然后**再次用 question 工具确认**是否继续。重复此循环直至用户确认素材足够或选择直接跳过配图进入写作。
 
-**4.2** 自动检测适合的配图类型：
+**4.2** 确定配图类型
 
-| 检测到内容 | 推荐 Mermaid 类型 |
-|-----------|------------------|
-| 架构变更/系统设计 | flowchart |
-| 业务流程/工作流 | flowchart |
-| ML 模型/训练管线 | flowchart |
-| 类/接口变更 | classDiagram |
-| 协议/交互变更 | sequenceDiagram |
-| 数据模型变更 | erDiagram |
-| 状态机/生命周期 | stateDiagram-v2 |
+把 Step 4.1 提取到的素材（每个 change 的 `proposal.md` + `design.md` 摘要）加载给 `creating-mermaid-diagrams` skill，让它根据自身的 Diagram Types 表推荐最适合的 1-2 种配图类型。
 
-逐项用 question 确认：A) 生成 B) 跳过。
+推荐 prompt 模板：
+
+```
+请根据以下 OpenSpec change 的内容，从 creating-mermaid-diagrams 支持的图表类型中，
+推荐最适合的 1-2 种配图类型：
+
+可用的类型及适用场景：
+- flowchart：processes, pipelines, decisions
+- sequenceDiagram：API calls, message passing
+- classDiagram：OOP models, data structures
+- erDiagram：database schemas
+- stateDiagram-v2：state machines, lifecycle
+- gantt：project timelines
+- mindmap：topic breakdowns
+- C4Context：high-level architecture
+
+只返回推荐的类型列表，例如 ["flowchart"] 或 ["sequenceDiagram", "erDiagram"]。
+如果没有合适的配图类型，返回 []。
+
+change 内容摘要如下：
+{change_material_summary}
+```
+
+得到推荐列表后：
+- 列表为空 → 询问用户是否手动指定配图类型，或跳过配图直接写作。
+- 列表非空 → 逐项用 question 确认：A) 生成 B) 跳过。
+
+如果 `creating-mermaid-diagrams` skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
 如果 creating-mermaid-diagrams skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
