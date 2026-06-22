@@ -214,16 +214,27 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 根据 4.2.1 分析出的方向清单及其 `content`，结合**Mermaid 配图表**为每个方向推荐图表类型。
 
-**必须**对每个方向用 question 确认用户选择：
+**必须**对每个方向用 question 确认用户选择。方向 > 1 时合并为一道多选 question（`multiple: true`），每个方向的推荐/备选/跳过作为独立选项：
+```
+Q: "以下配图方向，请选择要生成的图表类型（可多选）"
+
+A) 系统架构 → flowchart     | 推荐，理由：组件多适合流程图
+B) 系统架构 → C4Context     | 备选，理由：系统级架构全景
+C) 系统架构 → 跳过
+
+D) 数据模型 → erDiagram     | 推荐，理由：实体关系适合 ER 图
+E) 数据模型 → 跳过
+
+F) 消息交互 → sequenceDiagram | 推荐，理由：时序适合跨组件通信
+G) 消息交互 → 跳过
+```
+
+方向 = 1 时简化为单选：
 ```
 方向：系统架构, 内容： `content`
 A) 推荐：flowchart —— 理由：...
 B) 备选：C4Context —— 理由：...
 C) 跳过
-
-方向：数据模型, 内容： `content`
-A) 推荐：erDiagram —— 理由：...
-B) 跳过
 ```
 
 **🔴 CHECKPOINT — 配图方向和类型已确认。进入 Step 4.3 后将按当前选择生成 mermaid 源码，返回修改需重新确认。**
