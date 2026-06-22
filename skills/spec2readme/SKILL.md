@@ -234,7 +234,7 @@ C) 跳过
 
 **4.3** 加载 creating-mermaid-diagrams skill 生成配图源码
 
-通过 skill 工具加载 `creating-mermaid-diagrams`，然后将 4.2.2 中用户确认的**完整 prompt 直接作为请求内容**发送——无需再套模板，prompt 已在 4.2.1 按 Mermaid 配图表格式构造完成。
+通过 skill 工具加载 `creating-mermaid-diagrams`，然后将 4.2.2 中用户确认的**完整 prompt 直接作为请求内容**发送。
 
 在生成配图时，指定输出目录为 `$MMD_DIR`，让 creating-mermaid-diagrams skill 将 `.mmd` 文件写在此目录下。如果该 skill 的输出报告返回了文件路径，则从中读取 `.mmd` 内容；否则直接从 `$MMD_DIR` 下读取生成的 `.mmd` 文件。
 
