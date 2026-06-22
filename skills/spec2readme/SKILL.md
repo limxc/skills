@@ -151,6 +151,8 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 如果 `<change-name>` 对应目录不存在，脚本会输出错误并退出。
 
+**🔴 CHECKPOINT — 标题和输出路径已确认。进入 Step 4 后，如果返回修改标题需重新运行 prepare_output.py。**
+
 ## Step 4: 素材提取 + mermaid 配图
 
 **Input**: Selected changes + title
@@ -247,6 +249,8 @@ B) 跳过
 对每个方向用 question 确认用户选择（A / B / C / ...）。如果推荐方向 > 5，建议用户优先保留与核心变更最相关的方向。
 
 如果没有合适的方向，不向用户展示任何方向，直接进入 Step 5。
+
+**🔴 CHECKPOINT — 配图方向和类型已确认。进入 Step 4.3 后将按当前选择生成 mermaid 源码，返回修改需重新确认。**
 
 **4.3** 加载 creating-mermaid-diagrams skill 生成配图源码
 

@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "prompt": "我有几个已完成的 OpenSpec change，帮我生成一份技术文档。",
+    "expected": "执行环境检查 → 列出 pending changes → 让用户选择 → 生成带 Mermaid 配图的 Markdown 文档 → 追加到 README.md"
+  },
+  {
+    "id": 2,
+    "prompt": "把 openspec/changes/ 下的 feature-auth 和 refactor-db 两个 change 合并成一篇文档，要包含架构图和时序图。",
+    "expected": "选择多个 changes → 合并素材 → 推荐 C4Context + sequenceDiagram → 生成配图 → 写成一篇综合文档"
+  },
+  {
+    "id": 3,
+    "prompt": "/spec2readme",
+    "expected": "检查当前目录是否有 openspec/ 结构 → 有则列出 changes，无则提示错误并退出"
+  }
+]
