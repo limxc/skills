@@ -77,7 +77,7 @@ python <skill-dir>/scripts/env_check.py
   python <skill-dir>/scripts/env_check.py
   ```
   - 重跑后仍 `ready: false` → 告知用户跳过配图，进入纯文字模式。
-- `mmdc_render: false`（mmdc 已安装但渲染失败，`env_check.py` 会自动尝试安装 Chrome 并重试）→ 重试后仍失败则告知用户 mmdc 渲染不可用，改为 Kroki API 模式（Step 4.3 使用 `/kroki` 端点而非本地 mmdc 导出）。
+- `mmdc_render: false`（mmdc 已安装但渲染失败，`env_check.py` 会自动尝试安装 Chrome 并重试）→ 重试后仍失败则告知用户 mmdc 渲染不可用，Step 4.3 正常加载 creating-mermaid-diagrams 即可——该 skill 会自动选择可用的渲染方式。
 
 **1.3** position 状态：
 
@@ -207,8 +207,9 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 **规则**：
 - 分析出的方向全部进入 4.2.2 展示
-- 方向 > 5 时，只保留最重要的 5 个核心方向
+- 方向 > 5 时，按以下优先级裁剪到 5 个：架构/系统流程图 > 时序图 > 数据模型 > 状态机 > 类图 > C4 上下文 > 其他。优先级低的先裁，同优先级保留 content 更具体的。
 - 未分析出任何方向 → 直接进入 Step 5（纯文字）
+- 若分析出的方向与素材内容明显不符（如数据库迁移 change 配了饼图而非 ER 图），返回 Step 4.1 重新审视素材描述是否充分；仍无法匹配则跳过配图直接进入 Step 5 纯文字模式
 
 **4.2.2** 配图类型推荐与确认
 
