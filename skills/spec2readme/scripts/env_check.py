@@ -18,6 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 import tempfile
+import re
 
 
 def _run_mmdc(cmd: list[str], **kwargs):
@@ -25,6 +26,76 @@ def _run_mmdc(cmd: list[str], **kwargs):
     if sys.platform == "win32":
         return subprocess.run(" ".join(cmd), shell=True, **kwargs)
     return subprocess.run(cmd, **kwargs)
+
+
+def _get_mmdc_node_modules() -> Path | None:
+    """Locate puppeteer-core bundled with mmdc."""
+    mmdc_bin = shutil.which("mmdc")
+    if not mmdc_bin:
+        return None
+
+    # mmdc is typically a symlink/cmd to the real script in node_modules
+    mmdc_path = Path(mmdc_bin).resolve()
+    # Walk up from mmdc binary to find node_modules/@mermaid-js/mermaid-cli
+    for parent in mmdc_path.parents:
+        candidate = parent / "node_modules" / "@mermaid-js" / "mermaid-cli" / "node_modules" / "puppeteer-core"
+        if candidate.is_dir():
+            return candidate
+        # Also check global npm prefix
+        global_candidate = parent / "node_modules" / "puppeteer-core"
+        if global_candidate.is_dir():
+            return global_candidate
+    return None
+
+
+def get_mmdc_puppeteer_revision() -> str:
+    """Read the expected Chrome revision from mmdc's puppeteer-core."""
+    pkg_path = _get_mmdc_node_modules()
+    if not pkg_path:
+        return ""
+
+    pkg_json = pkg_path / "package.json"
+    if not pkg_json.is_file():
+        return ""
+
+    try:
+        data = json.loads(pkg_json.read_text(encoding="utf-8"))
+    except Exception:
+        return ""
+
+    # puppeteer-core package.json stores expected revision in puppeteer.chromium_revision
+    puppeteer_cfg = data.get("puppeteer", {})
+    return str(puppeteer_cfg.get("chromium_revision", ""))
+
+
+def install_chrome_for_mmdc() -> tuple[bool, str]:
+    """Install the Chrome revision that mmdc's puppeteer-core expects.
+
+    Returns (success, message).
+    """
+    if not check_npx():
+        return False, "npx not available"
+
+    revision = get_mmdc_puppeteer_revision()
+    if revision:
+        cmd = ["npx", "puppeteer", "browsers", "install", f"chrome@{revision}"]
+        try:
+            result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0:
+                return True, f"installed chrome@{revision}"
+            return False, f"chrome@{revision} install failed"
+        except Exception as e:
+            return False, str(e)
+
+    # Fallback: no revision found, try installing latest chrome-headless-shell
+    cmd = ["npx", "puppeteer", "browsers", "install", "chrome-headless-shell"]
+    try:
+        result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
+        if result.returncode == 0:
+            return True, "installed chrome-headless-shell (latest)"
+        return False, "chrome-headless-shell install failed"
+    except Exception as e:
+        return False, str(e)
 
 
 def skill_home() -> Path:
@@ -175,23 +246,23 @@ def main() -> int:
         status["mmdc_render"], render_err = check_mmdc_render()
         if not status["mmdc_render"]:
             status["messages"].append(
-                "mmdc render test failed. Attempting auto-repair (install Chrome headless)...\n"
+                "mmdc render test failed. Attempting auto-repair (install matching Chrome revision)...\n"
                 f"  Error: {render_err}"
             )
-            # Attempt auto-repair: install Chrome and retry render
-            _run_npx(
-                ["npx", "puppeteer", "browsers", "install", "chrome-headless-shell"],
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            status["mmdc_render"], render_err = check_mmdc_render()
-            if status["mmdc_render"]:
-                status["messages"].append("Auto-repair successful: mmdc render test passed after Chrome install.")
+            install_ok, install_msg = install_chrome_for_mmdc()
+            if install_ok:
+                status["mmdc_render"], render_err = check_mmdc_render()
+                if status["mmdc_render"]:
+                    status["messages"].append(f"Auto-repair successful: {install_msg}, render test passed.")
+                else:
+                    status["messages"].append(
+                        f"Chrome installed ({install_msg}) but mmdc render still failed.\n"
+                        f"  Error: {render_err}\n"
+                        "  Manual fix: set PUPPETEER_EXECUTABLE_PATH to the Chrome binary."
+                    )
             else:
                 status["messages"].append(
-                    "Auto-repair failed. mmdc is installed but cannot produce output.\n"
-                    f"  Error: {render_err}\n"
+                    f"Auto-repair failed: {install_msg}\n"
                     "  Manual fix: npx puppeteer browsers install chrome-headless-shell\n"
                     "  or use Kroki API fallback."
                 )
