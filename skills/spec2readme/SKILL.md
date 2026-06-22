@@ -77,7 +77,7 @@ python <skill-dir>/scripts/env_check.py
   python <skill-dir>/scripts/env_check.py
   ```
   - 重跑后仍 `ready: false` → 告知用户跳过配图，进入纯文字模式。
-- `mmdc_render: false`（mmdc 已安装但渲染失败，`env_check.py` 会自动尝试安装 Chrome 并重试）→ 重试后仍失败则告知用户 mmdc 渲染不可用，改为 Kroki API 模式——creating-mermaid-diagrams 会自动使用 Kroki API（https://kroki.io）渲染，无需 mmdc 和本地 Chrome。在 Step 4.3 加载 creating-mermaid-diagrams 时在 prompt 末尾标注 "使用 Kroki API 模式，不要调用本地 mmdc"。
+- `mmdc_render: false`（mmdc 已安装但渲染失败，`env_check.py` 会自动尝试安装 Chrome 并重试）→ 重试后仍失败则告知用户 mmdc 渲染不可用，改为 Kroki API 模式——creating-mermaid-diagrams 会自动使用 Kroki API（https://kroki.io）渲染，无需 mmdc 和本地 Chrome。在 Step 4.3 加载 creating-mermaid-diagrams 时在 prompt 末尾标注 "使用 Kroki API 模式，不要调用本地 mmdc"。如果 Kroki API 也不可用（网络不通/超时）→ 告知用户跳过全部配图，进入纯文字模式。
 
 **1.3** position 状态：
 
