@@ -166,18 +166,27 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 
 **4.2** 确定配图类型
 
-把 Step 4.1 提取到的素材（每个 change 的 `proposal.md` + `design.md` 摘要）加载给 `creating-mermaid-diagrams` skill，让它根据 change 内容和所属领域，推荐所有合适的配图类型。
+把 Step 4.1 提取到的素材（每个 change 的 `proposal.md` + `design.md` 摘要）加载给 `creating-mermaid-diagrams` skill，让它按**内容方向/视角**分组推荐配图。
+
+每个方向最多给出 **1 个推荐项 + 不超过 2 个备选项**。推荐项是最适合该视角的图表类型，备选项是也能表达但稍逊的方案。
 
 推荐 prompt 模板：
 
 ```
 请根据以下 OpenSpec change 的内容，从 creating-mermaid-diagrams 支持的图表类型中，
-推荐所有合适的配图类型。不要人为限制数量，只要内容确实需要，就推荐。
+按内容方向/视角分组推荐配图。
 
-对每一种推荐，必须输出：
+分组原则：
+- 每个独立的内容方向/视角作为一组（如“系统架构”、“数据模型”、“协议交互”）。
+- 每个方向给出 1 个推荐项 + 不超过 2 个备选项。
+- 避免同一个方向用多种同质化图表重复表达。
+
+对每一个选项，必须输出：
+- direction：该选项对应的内容方向/视角
 - type：图表类型
 - content：这张图应该画什么（具体组件 / 实体 / 参与方 / 状态 / 流程步骤等）
-- reason：为什么这个类型适合这段内容
+- reason：为什么这个类型适合该视角
+- recommended：true（推荐项）或 false（备选项）
 
 可用的类型及适用场景（包括但不限于）：
 - flowchart：业务流程、系统架构、处理管线、决策分支
@@ -192,14 +201,25 @@ python <skill-dir>/scripts/prepare_output.py <change-name>
 返回 JSON 数组，例如：
 [
   {
+    "direction": "系统架构",
     "type": "flowchart",
     "content": "微服务电商架构：Mobile/Web → API Gateway → User/Order/Product/Payment 服务 → DB + Redis",
-    "reason": "proposal.md 描述系统拆分为多个服务并说明调用关系"
+    "reason": "proposal.md 描述系统拆分为多个服务并说明调用关系",
+    "recommended": true
   },
   {
+    "direction": "系统架构",
+    "type": "C4Context",
+    "content": "电商系统上下文：用户 → 电商系统 → 支付/物流/通知外部服务",
+    "reason": "适合展示系统与外部依赖的高层级关系",
+    "recommended": false
+  },
+  {
+    "direction": "数据模型",
     "type": "erDiagram",
     "content": "电商核心实体：User、Order、OrderItem、Product 及其关系",
-    "reason": "design.md 定义了数据模型和实体间外键关系"
+    "reason": "design.md 定义了数据模型和实体间外键关系",
+    "recommended": true
   }
 ]
 
@@ -209,17 +229,22 @@ change 内容摘要如下：
 {change_material_summary}
 ```
 
-得到推荐列表后，先向用户展示所有推荐：
+得到推荐列表后，按**方向**分组展示：
 
 ```
-根据 change 内容，推荐生成以下配图：
-1. flowchart —— 内容：... —— 理由：...
-2. erDiagram —— 内容：... —— 理由：...
+方向：系统架构
+A) 推荐：flowchart —— 内容：... —— 理由：...
+B) 备选：C4Context —— 内容：... —— 理由：...
+C) 跳过
+
+方向：数据模型
+A) 推荐：erDiagram —— 内容：... —— 理由：...
+B) 跳过
 ```
 
-然后逐项用 question 确认：A) 生成 B) 跳过。
+对每个方向用 question 确认用户选择（A / B / C / ...）。只生成用户选中的选项。
 
-- 列表为空 → 询问用户是否手动指定配图类型，或跳过配图直接写作。
+- 没有任何推荐 → 询问用户是否手动指定配图类型，或跳过配图直接写作。
 
 如果 `creating-mermaid-diagrams` skill 加载失败 → 重新加载一次。仍失败 → 跳过所有配图，仅生成纯文字文档，在 Step 5.2 告知用户配图缺失原因。
 
