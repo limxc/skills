@@ -13,6 +13,7 @@ Exit codes:
 """
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -48,46 +49,82 @@ def _get_mmdc_node_modules() -> Path | None:
     return None
 
 
-def get_mmdc_puppeteer_revision() -> str:
-    """Read the expected Chrome revision from mmdc's puppeteer-core."""
-    pkg_path = _get_mmdc_node_modules()
-    if not pkg_path:
-        return ""
-
-    pkg_json = pkg_path / "package.json"
-    if not pkg_json.is_file():
-        return ""
-
+def _find_browser_binary(browser: str, revision: str) -> str:
+    """Find the installed browser binary path by listing puppeteer browsers."""
     try:
-        data = json.loads(pkg_json.read_text(encoding="utf-8"))
+        result = _run_npx(
+            ["npx", "puppeteer", "browsers", "list"],
+            check=False, capture_output=True, text=True, timeout=30,
+        )
+        for line in result.stdout.splitlines():
+            if f"{browser}@{revision}" in line:
+                # Format: "chrome@148.0.7778.97 (win64) C:\path\to\chrome.exe"
+                parts = line.split()
+                if len(parts) >= 3:
+                    return parts[-1]
     except Exception:
-        return ""
-
-    # puppeteer-core package.json stores expected revision in puppeteer.chromium_revision
-    puppeteer_cfg = data.get("puppeteer", {})
-    return str(puppeteer_cfg.get("chromium_revision", ""))
+        pass
+    return ""
 
 
-def install_chrome_for_mmdc() -> tuple[bool, str]:
+def install_chrome_for_mmdc(render_error: str = "") -> tuple[bool, str]:
     """Install the Chrome revision that mmdc's puppeteer-core expects.
+
+    Tries (in order):
+    1. Parse version from render error (e.g. "Could not find Chrome (ver. 148.0.7778.97)")
+    2. Read puppeteer-core package.json 'puppeteer.chromium_revision'
+    3. Fall back to installing latest chrome-headless-shell
 
     Returns (success, message).
     """
     if not check_npx():
         return False, "npx not available"
 
-    revision = get_mmdc_puppeteer_revision()
-    if revision:
-        cmd = ["npx", "puppeteer", "browsers", "install", f"chrome@{revision}"]
-        try:
-            result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
-            if result.returncode == 0:
-                return True, f"installed chrome@{revision}"
-            return False, f"chrome@{revision} install failed"
-        except Exception as e:
-            return False, str(e)
+    # Try parsing expected version from render error message
+    rev = ""
+    m = re.search(r'ver\.?\s*([\d.]+)', render_error)
+    if m:
+        rev = m.group(1)
 
-    # Fallback: no revision found, try installing latest chrome-headless-shell
+    # Try reading from puppeteer-core package.json
+    if not rev:
+        pkg_path = _get_mmdc_node_modules()
+        if pkg_path:
+            pkg_json = pkg_path / "package.json"
+            if pkg_json.is_file():
+                try:
+                    data = json.loads(pkg_json.read_text(encoding="utf-8"))
+                    rev = str(data.get("puppeteer", {}).get("chromium_revision", ""))
+                except Exception:
+                    pass
+
+    if rev:
+        # Try multiple install strategies in order:
+        # 1. chrome@<exact-version>
+        # 2. chrome@<major>
+        # 3. chrome-headless-shell@<exact-version>
+        # 4. chrome-headless-shell@<major>
+        revs_to_try = [rev]
+        major = rev.split(".")[0] if "." in rev else rev
+        if major != rev:
+            revs_to_try.append(major)
+
+        for try_rev in revs_to_try:
+            for browser in ["chrome", "chrome-headless-shell"]:
+                cmd = ["npx", "puppeteer", "browsers", "install", f"{browser}@{try_rev}"]
+                try:
+                    result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
+                    if result.returncode == 0:
+                        # Find the installed binary path and set env var for mmdc
+                        exe_path = _find_browser_binary(browser, try_rev)
+                        if exe_path:
+                            os.environ["PUPPETEER_EXECUTABLE_PATH"] = exe_path
+                        return True, f"installed {browser}@{try_rev}"
+                except Exception:
+                    continue
+        return False, f"chrome install failed for versions {revs_to_try}"
+
+    # Fallback: no revision found, install latest chrome-headless-shell
     cmd = ["npx", "puppeteer", "browsers", "install", "chrome-headless-shell"]
     try:
         result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
@@ -157,14 +194,30 @@ def check_mmdc_render() -> tuple[bool, str]:
             png_file = Path(tmpdir) / "test.png"
             mmd_file.write_text(mmd_content, encoding="utf-8")
 
-            result = _run_mmdc(
-                ["mmdc", "-i", str(mmd_file), "-o", str(png_file)],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
+            # Pass through PUPPETEER_EXECUTABLE_PATH if set by auto-repair
+            env = os.environ.copy()
+            exe_path = os.environ.get("PUPPETEER_EXECUTABLE_PATH", "")
+            if exe_path and Path(exe_path).is_file():
+                env["PUPPETEER_EXECUTABLE_PATH"] = exe_path
+
+            if sys.platform == "win32":
+                result = subprocess.run(
+                    " ".join(["mmdc", "-i", str(mmd_file), "-o", str(png_file)]),
+                    shell=True, capture_output=True, text=True, timeout=30, env=env,
+                )
+            else:
+                result = subprocess.run(
+                    ["mmdc", "-i", str(mmd_file), "-o", str(png_file)],
+                    capture_output=True, text=True, timeout=30, env=env,
+                )
             if result.returncode != 0:
                 stderr = result.stderr.strip()
+                # Search for "Could not find Chrome" pattern — this contains the
+                # expected version that install_chrome_for_mmdc() will extract
+                for line in stderr.splitlines():
+                    if "Could not find Chrome" in line:
+                        return False, line.strip()
+                # Fallback: return last line of meaningful stderr
                 return False, stderr.splitlines()[-1] if stderr else "mmdc render failed"
 
             if not png_file.is_file() or png_file.stat().st_size == 0:
@@ -249,7 +302,7 @@ def main() -> int:
                 "mmdc render test failed. Attempting auto-repair (install matching Chrome revision)...\n"
                 f"  Error: {render_err}"
             )
-            install_ok, install_msg = install_chrome_for_mmdc()
+            install_ok, install_msg = install_chrome_for_mmdc(render_err)
             if install_ok:
                 status["mmdc_render"], render_err = check_mmdc_render()
                 if status["mmdc_render"]:
