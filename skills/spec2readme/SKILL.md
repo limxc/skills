@@ -63,14 +63,18 @@ python <skill-dir>/scripts/env_check.py
 
 根据返回状态处理：
 - `ready: true` → 继续。
-- `creating-mermaid-diagrams` 缺失 → 安装后重跑：
+- `creating-mermaid-diagrams` 缺失 → 安装后重跑 `env_check.py`：
   ```
   npx skills add https://github.com/Agents365-ai/mermaid-skill
+  python <skill-dir>/scripts/env_check.py
   ```
-- `mmdc` 缺失 → 安装后重跑：
+  - 重跑后仍 `ready: false` → 告知用户跳过配图，进入纯文字模式（Step 4 直接跳过，Step 5 不嵌入 mermaid 块）。
+- `mmdc` 缺失 → 安装后重跑 `env_check.py`：
   ```
   npm install -g @mermaid-js/mermaid-cli
+  python <skill-dir>/scripts/env_check.py
   ```
+  - 重跑后仍 `ready: false` → 告知用户跳过配图，进入纯文字模式。
 
 **1.3** Chrome 运行时检查（mmdc 依赖 puppeteer/Chrome）：
 
