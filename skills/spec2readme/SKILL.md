@@ -191,68 +191,73 @@ python <skill-dir>/scripts/get_mermaid_types.py
 
 该脚本自动读取 `creating-mermaid-diagrams` skill 的 SKILL.md，提取当前支持的所有图表类型（Flowchart / Sequence / Class / ER / State / Gantt / Pie / Git Graph / C4 Context / Mind Map 等），按 `type` / `keyword` / `use_for` 三字段输出 JSON。如果脚本失败（skill 未安装等），使用兜底列表：`flowchart, sequenceDiagram, erDiagram, classDiagram, stateDiagram-v2, gantt, C4Context, mindmap`。
 
-**4.2.2** 用结构化映射框架推荐配图：
+**4.2.2** 强制映射检查（不得跳过，不得凭感觉猜）：
 
-基于 Step 4.1 的 `change_material_summary`，使用以下**内容-类型映射框架**逐项匹配，不要凭感觉猜：
+基于 Step 4.1 的 `change_material_summary`，使用以下内容-类型映射框架**逐项输出命中结果**。
 
 ```
-内容类别 → 最适合的图表类型（按优先级排序）
+内容类别 → 图表类型（命中则必选，不得跳过核心类别）
 
 架构/组件/模块/服务间关系
-  → 推荐: C4Context（宏观架构全景）
-  → 备选: flowchart（组件流向细节，适合 <6 个组件时）
-  → 当 change 涉及系统拆分/新增服务/架构重构时优先
+  → 必选: C4Context（宏观架构全景）
+  → 当 change 涉及 ≥2 个独立组件/服务/端点时命中
 
 API/接口/消息传递/请求响应
-  → 推荐: sequenceDiagram（消息顺序和参与者交互）
-  → 备选: flowchart（简单请求路由，无复杂交互时）
-  → 当 change 涉及 API 新增/修改/集成时优先
+  → 必选: sequenceDiagram（消息顺序和参与者交互）
+  → 当 change 涉及"A 把请求发给 B，B 调 C"这类跨组件交互时命中
+  → 重要：此方向与"架构/组件"方向不互斥，两者经常同时命中，必须同时保留
 
 数据模型/实体/字段/外键
-  → 推荐: erDiagram（实体、属性和关系）
-  → 备选: classDiagram（类结构，适合面向对象设计）
-  → 当 change 涉及数据库/模型层变更时优先
+  → 必选: erDiagram
+  → 当 change 涉及数据库/模型层变更时命中
 
 工作流/流程/多步骤/管道
-  → 推荐: flowchart（流程走向和决策分支）
-  → 当 change 涉及 CI/CD/部署流程/业务步骤时优先
+  → 必选: flowchart（流程走向和决策分支）
+  → 当 change 涉及 CI/CD/部署流程/业务步骤时命中
 
 状态/生命周期/转换
-  → 推荐: stateDiagram-v2（状态转换和触发条件）
-  → 当 change 涉及订单/任务/工单状态机时优先
+  → 必选: stateDiagram-v2
+  → 当 change 涉及订单/任务/工单状态机时命中
 
 里程碑/发布/时间线
-  → 推荐: gantt（阶段划分和时间节点）
-  → 当 change 涉及版本发布/迁移计划时优先
-
-多类内容同时命中时
-  → 控制在 2-5 个方向，优先覆盖核心变更点
-  → 最多不超过 5 个方向，否则图表过多文档可读性下降
+  → 必选: gantt
+  → 当 change 涉及版本发布/迁移计划时命中
 ```
 
-对每个方向输出：
-- direction：内容方向（如"系统架构"）
-- type：图表类型（必须在上一步列表中）
-- content：这张图应画的具体内容（引用 change 中的具体组件/实体/参与方名，不要笼统说"系统组件"）
-- reason：为什么该类型适合此方向（引用框架中的映射逻辑 + change 的具体变更点）
-- recommended：true（推荐）或 false（备选）
+对每个 change 输出**强制映射检查表**：
 
-**4.2.3** 展示并确认：得到推荐列表后，按 direction 分组展示。
+| 内容类别 | 是否命中 | 命中证据（引用 change 中的具体组件/接口/实体名） | 必选图表类型 |
+|---|:---:|:---|:---|
+| 架构/组件 | 是/否 | ... | C4Context |
+| API/消息传递 | 是/否 | ... | sequenceDiagram |
+| 数据模型 | 是/否 | ... | erDiagram |
+| 工作流/流程 | 是/否 | ... | flowchart |
+| 状态/生命周期 | 是/否 | ... | stateDiagram-v2 |
+| 里程碑/时间线 | 是/否 | ... | gantt |
+
+**规则**：
+- 命中类别 ≥1 → 为每个命中类别生成一个配图方向
+- **命中"架构/组件"和"API/消息传递"两者时，必须同时保留，不能因"flowchart 也能表达流向"而跳过 sequenceDiagram**
+- 命中类别 > 5 时，按 change 核心目标优先级排序，只保留前 5 个
+- 未命中任何类别 → 直接进入 Step 5（纯文字）
+
+**4.2.3** 展示并确认：
+
+根据 4.2.2 的检查表生成推荐列表。每个命中类别作为一个独立方向展示，格式：
 
 ```
-方向：系统架构（涉及 API Gateway、Auth Service、User DB）
-A) 推荐：C4Context —— 内容：展示 API Gateway + Auth Service + User DB 的宏观全景 —— 理由：change 涉及新增 Auth 服务，C4Context 能展示系统级架构变更
-B) 备选：flowchart —— 内容：展示 Client → API Gateway → Auth Service → User DB 的调用流向 —— 理由：组件数少，flowchart 也能表达
-C) 跳过
+方向：系统架构（涉及 护士 Web 端、服务器、音频网关、电视屏）
+图表：C4Context —— 内容：展示护士 Web 端、服务器、音频网关、电视屏的系统级关系 —— 理由：change 涉及多端交互，C4Context 展示宏观架构
+选项：A) 保留  B) 跳过（不推荐）
 
-方向：协议交互（涉及 JWT 登录流程）
-A) 推荐：sequenceDiagram —— 内容：展示 JWT 登录中 Client/Gateway/Auth Service/DB 的消息时序 —— 理由：API 变更最适合用时序图展示请求-响应顺序
-B) 跳过
+方向：消息交互（涉及 患者→护士→医生→服务器→音频网关→电视屏）
+图表：sequenceDiagram —— 内容：展示"呼叫下一位"事件中医生端、服务器、音频网关、电视屏的消息时序 —— 理由：change 涉及服务器同时推送音频和更新屏幕，必须用时序图展示并发消息
+选项：A) 保留  B) 跳过（不推荐）
 ```
 
-对每个方向用 question 确认用户选择（A / B / C / ...）。推荐方向超过 5 个时，只保留与核心变更最相关的 5 个方向，其余不展示。
+对每个方向用 question 确认用户选择。默认推荐：**核心变更相关的方向不得跳过**（4.2.2 中标注"必选"的类别）。如果用户坚持跳过核心方向，需说明理由并记录。
 
-如果没有合适的方向，不向用户展示任何方向，直接进入 Step 5。
+如果没有命中任何方向，不向用户展示任何方向，直接进入 Step 5。
 
 **🔴 CHECKPOINT — 配图方向和类型已确认。进入 Step 4.3 后将按当前选择生成 mermaid 源码，返回修改需重新确认。**
 
