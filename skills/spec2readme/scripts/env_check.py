@@ -99,29 +99,23 @@ def install_chrome_for_mmdc(render_error: str = "") -> tuple[bool, str]:
                     pass
 
     if rev:
-        # Try multiple install strategies in order:
-        # 1. chrome@<exact-version>
-        # 2. chrome@<major>
-        # 3. chrome-headless-shell@<exact-version>
-        # 4. chrome-headless-shell@<major>
+        # Try chrome@<exact-version>, fall back to chrome@<major>
         revs_to_try = [rev]
         major = rev.split(".")[0] if "." in rev else rev
         if major != rev:
             revs_to_try.append(major)
 
         for try_rev in revs_to_try:
-            for browser in ["chrome", "chrome-headless-shell"]:
-                cmd = ["npx", "puppeteer", "browsers", "install", f"{browser}@{try_rev}"]
-                try:
-                    result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
-                    if result.returncode == 0:
-                        # Find the installed binary path and set env var for mmdc
-                        exe_path = _find_browser_binary(browser, try_rev)
-                        if exe_path:
-                            os.environ["PUPPETEER_EXECUTABLE_PATH"] = exe_path
-                        return True, f"installed {browser}@{try_rev}"
-                except Exception:
-                    continue
+            cmd = ["npx", "puppeteer", "browsers", "install", f"chrome@{try_rev}"]
+            try:
+                result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
+                if result.returncode == 0:
+                    exe_path = _find_browser_binary("chrome", try_rev)
+                    if exe_path:
+                        os.environ["PUPPETEER_EXECUTABLE_PATH"] = exe_path
+                    return True, f"installed chrome@{try_rev}"
+            except Exception:
+                continue
         return False, f"chrome install failed for versions {revs_to_try}"
 
     # Fallback: no revision found, install latest chrome-headless-shell
