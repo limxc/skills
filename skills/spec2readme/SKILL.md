@@ -154,7 +154,7 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 如果 `<change-name>` 对应目录不存在，脚本会输出错误并退出。
 
-**🔴 CHECKPOINT — 标题和输出路径已确认。进入 Step 4 后，如果返回修改标题需重新运行 prepare_output.py。**
+**🔴 CHECKPOINT — 标题和输出路径已确认。标题仅影响文档内展示，不影响输出文件路径；如需修改标题直接改即可，无需重跑 prepare_output.py。**
 
 ## Step 4: 素材提取 + mermaid 配图
 
