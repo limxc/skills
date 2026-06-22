@@ -138,6 +138,7 @@ def find_changes(project_root: Optional[Path] = None) -> list[dict]:
                 "has_tasks": (entry / "tasks.md").exists(),
             })
 
+    changes.sort(key=lambda c: c["dir_name"])
     return changes
 
 
@@ -167,7 +168,8 @@ def find_all_changes_with_status(project_root: Optional[Path] = None) -> list[di
 
 def main():
     parser = argparse.ArgumentParser(description="OpenSpec change position tracker (spec2readme)")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--print-root", action="store_true", help="Print resolved project root path and exit")
+    sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("status", help="Show current position (processed + skipped lists)")
     sub.add_parser("list", help="List all changes with status")
@@ -185,6 +187,14 @@ def main():
     sub.add_parser("reset", help="Reset position (clear all tracking)")
 
     args = parser.parse_args()
+
+    if args.print_root:
+        print(str(_find_project_root()))
+        return
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
 
     if args.command == "status":
         pos = read_position()

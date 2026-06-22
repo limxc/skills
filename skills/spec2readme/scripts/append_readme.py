@@ -2,11 +2,15 @@
 """Append a document link entry to README.md project docs section.
 
 Usage:
-    python scripts/append_readme.py <project-root> "<title>" <doc-path> <change-dir>
+    python scripts/append_readme.py <project-root> "<title>" <doc-path> <change-path-or-name>
 
-<change-dir> is the change directory name (e.g., tweak-spec2md-diagram-prompts).
-Looks for it under openspec/changes/ or openspec/changes/archive/.
-Entry date comes from git author date, or filesystem ctime as fallback.
+<change-path-or-name> can be either:
+- the absolute/relative path to the change directory, or
+- the change directory name (e.g., tweak-spec2md-diagram-prompts).
+
+If a directory name is given, the script looks for it under
+openspec/changes/ or openspec/changes/archive/.
+Entry date comes from the change directory's .openspec.yaml `created:` field.
 """
 
 import os
@@ -14,23 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-
-def _get_change_date(project_root, change_dir):
-    candidates = [
-        project_root / "openspec" / "changes" / change_dir,
-        project_root / "openspec" / "changes" / "archive" / change_dir,
-    ]
-    for p in candidates:
-        yaml_path = p / ".openspec.yaml"
-        if yaml_path.is_file():
-            try:
-                for line in yaml_path.read_text(encoding="utf-8").splitlines():
-                    line = line.strip()
-                    if line.startswith("created:"):
-                        return line.split(":", 1)[1].strip()
-            except Exception:
-                pass
-    return ""
+from get_change_date import get_change_date, resolve_change_path
 
 
 def find_project_root() -> Path:
@@ -45,16 +33,20 @@ def find_project_root() -> Path:
 
 
 def main():
-    if len(sys.argv) < 4:
-        print("Usage: python scripts/append_readme.py <project-root> \"<title>\" <doc-path> <change-dir>", file=sys.stderr)
+    if len(sys.argv) < 5:
+        print(
+            "Usage: python scripts/append_readme.py <project-root> \"<title>\" <doc-path> <change-path-or-name>",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     project_root = Path(sys.argv[1]).resolve()
     title = sys.argv[2]
     doc_relative = sys.argv[3]
-    change_dir = sys.argv[4]
+    change_arg = sys.argv[4]
 
-    date_str = _get_change_date(project_root, change_dir)
+    change_path = resolve_change_path(change_arg, project_root)
+    date_str = get_change_date(change_path)
     date_label = f"{date_str} \u2014 " if date_str else ""
 
     readme_path = project_root / "README.md"
@@ -67,6 +59,12 @@ def main():
         return
 
     content = readme_path.read_text(encoding="utf-8")
+
+    # Avoid duplicate entries
+    if link_entry in content:
+        print(f"Entry already exists in {readme_path}; skipping")
+        return
+
     pattern = re.compile(rf"^{re.escape(section_header)}\s*\n(.*?)(?=\n## |\Z)", re.DOTALL | re.MULTILINE)
     match = pattern.search(content)
 
