@@ -100,6 +100,8 @@ python <skill-dir>/scripts/position.py pending
 
 pending changes ≥ 5 时先问批量操作：全部写 / 全部略过 / 逐项确认。
 
+如果某个 change 缺少 `proposal.md`，提示用户该 change 缺少关键素材，询问是否继续（可能素材不足）或跳过。
+
 ## Step 3: 标题 + 输出文件名确认
 
 **Input**: Selected changes list
@@ -236,7 +238,7 @@ python -c "import sys; from pathlib import Path; sys.exit(0 if Path('$OUTPUT_FIL
 **5.2** 写入后展示绝对路径供用户查看：
 
 ```
-文档已生成：{Resolve-Path $OUTPUT_FILE}
+python -c "from pathlib import Path; print(Path('$OUTPUT_FILE').resolve())"
 ```
 
 用户阅读后可提出修改请求（直接对话，不得使用 question）。修改后重新展示路径。
@@ -288,9 +290,9 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
-| 1.1 | openspec/ 不存在 | `..` 层级重试 | 提示终止 |
+| 1.1 | openspec/ 不存在 | `python <skill-dir>/scripts/check_openspec.py --try-parent` | 提示终止 |
 | 1.2 | mmdc 或 creating-mermaid-diagrams 未安装 | 对应 `npm install` / `npx skills add` | 终止 |
-| 1.3 | puppeteer Chrome 未安装 | `npx puppeteer browsers install chrome-headless-shell` | 自动安装，不终止 |
+| 1.3 | puppeteer Chrome 未安装 | `python <skill-dir>/scripts/env_check.py` 自动安装 | 提示跳过配图或纯文字输出 |
 | 1.4 | 无 pending changes | unskip 选项 | 终止 |
 | 3.2 | change 目录缺 `.openspec.yaml` 或 `created:` 字段 | 检查 change 目录结构 | 终止（change 结构不完整） |
 | 2 | 缺 proposal.md | 提示用户该 change 缺少关键素材，询问是否继续或跳过 | 用户选择跳过则继续下一个 change |
