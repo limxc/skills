@@ -156,7 +156,7 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 **Input**: Selected changes + title
 **Output**: Material summary + mermaid diagram source code
 
-**4.1** 强制素材提取与讨论（多轮对话，直至用户确认）
+**4.1** 素材提取与讨论（多轮对话，直至用户确认）
 
 遍历每个选中的 change，读取：
 - `proposal.md` → Why / What / Impact
@@ -177,28 +177,82 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 **4.2** 确定配图类型
 
-先通过 skill 工具加载 `creating-mermaid-diagrams`，查阅其 reference 文件获取当前支持的完整图表类型列表，再将 4.1 合并的 `change_material_summary` 连同推荐 prompt 模板（`<skill-dir>/references/mermaid-recommendation-prompt.md`，将模板中的 `{change_material_summary}` 占位符替换为 `change_material_summary` 的内容）发给它，让它按**内容方向/视角**分组推荐配图。
-
-得到推荐列表后，按**方向**分组展示。若推荐方向>5，在展示时建议用户优先保留与核心变更直接相关的方向。
+**4.2.1** 获取支持的图表类型（动态，不再硬编码猜测）：
 
 ```
-方向：系统架构
-A) 推荐：flowchart —— 内容：... —— 理由：...
-B) 备选：C4Context —— 内容：... —— 理由：...
+python <skill-dir>/scripts/get_mermaid_types.py
+```
+
+该脚本自动读取 `creating-mermaid-diagrams` skill 的 SKILL.md，提取当前支持的所有图表类型（Flowchart / Sequence / Class / ER / State / Gantt / Pie / Git Graph / C4 Context / Mind Map 等），按 `type` / `keyword` / `use_for` 三字段输出 JSON。如果脚本失败（skill 未安装等），使用兜底列表：`flowchart, sequenceDiagram, erDiagram, classDiagram, stateDiagram-v2, gantt, C4Context, mindmap`。
+
+**4.2.2** 用结构化映射框架推荐配图：
+
+基于 Step 4.1 的 `change_material_summary`，使用以下**内容-类型映射框架**逐项匹配，不要凭感觉猜：
+
+```
+内容类别 → 最适合的图表类型（按优先级排序）
+
+架构/组件/模块/服务间关系
+  → 推荐: C4Context（宏观架构全景）
+  → 备选: flowchart（组件流向细节，适合 <6 个组件时）
+  → 当 change 涉及系统拆分/新增服务/架构重构时优先
+
+API/接口/消息传递/请求响应
+  → 推荐: sequenceDiagram（消息顺序和参与者交互）
+  → 备选: flowchart（简单请求路由，无复杂交互时）
+  → 当 change 涉及 API 新增/修改/集成时优先
+
+数据模型/实体/字段/外键
+  → 推荐: erDiagram（实体、属性和关系）
+  → 备选: classDiagram（类结构，适合面向对象设计）
+  → 当 change 涉及数据库/模型层变更时优先
+
+工作流/流程/多步骤/管道
+  → 推荐: flowchart（流程走向和决策分支）
+  → 当 change 涉及 CI/CD/部署流程/业务步骤时优先
+
+状态/生命周期/转换
+  → 推荐: stateDiagram-v2（状态转换和触发条件）
+  → 当 change 涉及订单/任务/工单状态机时优先
+
+里程碑/发布/时间线
+  → 推荐: gantt（阶段划分和时间节点）
+  → 当 change 涉及版本发布/迁移计划时优先
+
+多类内容同时命中时
+  → 控制在 2-5 个方向，优先覆盖核心变更点
+  → 最多不超过 5 个方向，否则图表过多文档可读性下降
+```
+
+对每个方向输出：
+- direction：内容方向（如"系统架构"）
+- type：图表类型（必须在上一步列表中）
+- content：这张图应画的具体内容（引用 change 中的具体组件/实体/参与方名，不要笼统说"系统组件"）
+- reason：为什么该类型适合此方向（引用框架中的映射逻辑 + change 的具体变更点）
+- recommended：true（推荐）或 false（备选）
+
+**4.2.3** 展示并确认：得到推荐列表后，按 direction 分组展示。
+
+```
+方向：系统架构（涉及 API Gateway、Auth Service、User DB）
+A) 推荐：C4Context —— 内容：展示 API Gateway + Auth Service + User DB 的宏观全景 —— 理由：change 涉及新增 Auth 服务，C4Context 能展示系统级架构变更
+B) 备选：flowchart —— 内容：展示 Client → API Gateway → Auth Service → User DB 的调用流向 —— 理由：组件数少，flowchart 也能表达
 C) 跳过
 
-方向：数据模型
-A) 推荐：erDiagram —— 内容：... —— 理由：...
+方向：协议交互（涉及 JWT 登录流程）
+A) 推荐：sequenceDiagram —— 内容：展示 JWT 登录中 Client/Gateway/Auth Service/DB 的消息时序 —— 理由：API 变更最适合用时序图展示请求-响应顺序
 B) 跳过
 ```
 
-对每个方向用 question 确认用户选择（A / B / C / ...）。
+对每个方向用 question 确认用户选择（A / B / C / ...）。如果推荐方向 > 5，建议用户优先保留与核心变更最相关的方向。
+
+如果没有合适的方向，不向用户展示任何方向，直接进入 Step 5。
 
 **4.3** 加载 creating-mermaid-diagrams skill 生成配图源码
 
 通过 skill 工具加载 `creating-mermaid-diagrams`，然后对 4.2 中用户确认的每个配图项逐一构造 prompt 请求生成。
 
-4.2 推荐返回的 JSON 中每个配图项都有 `content` 字段（如 "微服务电商架构：Mobile/Web → API Gateway → User/Order/Product/Payment 服务 → DB + Redis"），这是**内容描述**，不是完整 prompt。4.3 需要将其**嵌入对应类型的 prompt 模板**（如下表），形成完整 prompt 后再发给 `creating-mermaid-diagrams`。关键是**具体描述组件/实体名称、流向/关系、边界/分支**。
+用户在 4.2.3 中确认的每个配图项都包含 `content` 字段（如 "微服务电商架构：Mobile/Web → API Gateway → User/Order/Product/Payment 服务 → DB + Redis"），这是**内容描述**，不是完整 prompt。4.3 需要将其**嵌入对应类型的 prompt 模板**（如下表），形成完整 prompt 后再发给 `creating-mermaid-diagrams`。关键是**具体描述组件/实体名称、流向/关系、边界/分支**。
 
 | 配图类型 | 构造方式 / 示例 |
 |---------|---------------|
@@ -255,48 +309,38 @@ python -c "from pathlib import Path; print(Path('$OUTPUT_FILE').resolve())"
 
 ## Step 6: 后处理
 
-**Input**: Final document at `$OUTPUT_FILE`
-**Output**: Position updated + README.md 项目文档 section appended
-
-**6.1** position 更新：
+**6.1** 标记 processed：
 
 ```
 python <skill-dir>/scripts/position.py processed <change-name-1> ... <change-name-N>
 ```
 
-`<change-name>` 为 change 目录名（如 `hqms-system-architecture-design`），不是绝对路径。若需从 `prepare_output.py` 的输出中提取，使用 `changeName` 字段。
+`<change-name>` = 目录名（如 `prepare_output.py` 输出的 `changeName`）。
 
-**6.2** 项目 README.md 追加：
+**6.2** 追加 README.md 链接：
 
 ```
-python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <change-name>
+python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <main-change-name>
 ```
 
-`$OUTPUT_FILE` 为相对路径（由 `prepare_output.py` 保证），展示给用户时路径干净。`append_readme.py` 会自动将其转为相对于 `README.md` 的相对路径后写入链接，确保链接在项目内可移植。
+- `$OUTPUT_FILE`：相对/绝对路径均可，脚本自动转为相对于 README.md 的链接。
+- `<main-change-name>`：主 change 目录名（Step 3.2 选出的最新 change）。
 
-这会在 `README.md` 的 `## 项目文档` 节追加一条带日期的链接（日期取自 change 目录 `.openspec.yaml` 的 `created:` 字段）。无此节则自动创建。
-多 change 场景：只传入主 change 目录名，日期取自该 change 的 `created:` 字段（与 Step 3.2 一致）。
+无 `## 项目文档` 节则自动创建。
 
-**6.3** 清理临时 `.mmd` 文件（不影响结果，失败可忽略）：
+**6.3** 清理临时 `.mmd` 文件（失败可忽略）：
 
 ```
 python <skill-dir>/scripts/cleanup_mmd.py $MMD_DIR
 ```
-
-如果 `position.py processed` 失败（JSON 文件不可写）→ 输出失败原因，告知用户手动执行：
-```
-python <skill-dir>/scripts/position.py processed <change-name-1> ... <change-name-N>
-```
-
-如果 `append_readme.py` 失败（README.md 不可写或不存在）→ 输出失败原因，告知用户手动追加链接到 README.md 的 `## 项目文档` 节。
 
 **6.4** 回复用户（汇总）：
 - 标题：`{title}`
 - 文档路径：`$OUTPUT_FILE`
 - 覆盖 N 个 changes：`{change-name-1}`, `{change-name-2}`
 - Mermaid 图表：N 个（flowchart / sequence / ...）
-- ✅ position 已更新（或 ❌ 需手动执行）
-- ✅ README.md 项目文档已追加（或 ❌ 需手动追加）
+- ✅ position 已更新（或 ❌ position 更新更新失败）
+- ✅ README.md 项目文档已追加（或 ❌ README.md 项目文档追加失败）
 
 ## 异常与边界处理
 
@@ -338,6 +382,7 @@ python <skill-dir>/scripts/position.py processed <change-name-1> ... <change-nam
 | `scripts/env_check.py` | 依赖环境检查（creating-mermaid-diagrams / mmdc / Chrome） |
 | `scripts/prepare_output.py` | 生成输出文件路径和临时目录 |
 | `scripts/get_change_date.py` | 从 change 目录的 `.openspec.yaml` 读取 `created:` 日期 |
+| `scripts/get_mermaid_types.py` | 读取 creating-mermaid-diagrams 支持的图表类型列表 |
 | `scripts/cleanup_mmd.py` | 清理临时 `.mmd` 目录 |
 | `scripts/utils.py` | `find_project_root()` / `resolve_change_path()` 共享工具函数 |
 

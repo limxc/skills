@@ -14,6 +14,7 @@
 | `scripts/position.py` | Track processed/skipped changes (`status`, `pending`, `processed`, `skipped`, `unskip`, `list`, `reset`) |
 | `scripts/prepare_output.py` | Generate output file path and temporary `.mmd` directory |
 | `scripts/get_change_date.py` | Read `created:` from a change directory's `.openspec.yaml` |
+| `scripts/get_mermaid_types.py` | Read supported diagram types from creating-mermaid-diagrams |
 | `scripts/append_readme.py` | Append a document link to `README.md` 项目文档 section |
 | `scripts/cleanup_mmd.py` | Remove the temporary `.mmd` directory |
 | `scripts/utils.py` | Shared helpers (`find_project_root`, `resolve_change_path`) |

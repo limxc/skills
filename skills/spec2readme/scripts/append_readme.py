@@ -35,12 +35,12 @@ def main():
     change_arg = sys.argv[4]
 
     # Ensure link is relative to README.md (project root)
-    if doc_path.is_absolute():
-        try:
-            doc_relative = doc_path.relative_to(project_root).as_posix()
-        except ValueError:
-            doc_relative = doc_path.as_posix()
-    else:
+    # If doc_path is relative, resolve it against project_root first
+    if not doc_path.is_absolute():
+        doc_path = project_root / doc_path
+    try:
+        doc_relative = doc_path.relative_to(project_root).as_posix()
+    except ValueError:
         doc_relative = doc_path.as_posix()
 
     change_path = resolve_change_path(change_arg, project_root)

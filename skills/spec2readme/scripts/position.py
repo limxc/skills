@@ -54,14 +54,31 @@ def write_position(position: Position, project_root: Optional[Path] = None) -> N
 
 
 def _filter_valid_dir_names(dir_names: list[str], project_root: Optional[Path] = None) -> list[str]:
-    """Return only dir_names that correspond to existing change directories."""
-    valid = {c["dir_name"] for c in find_changes(project_root)}
+    """Return only dir_names that correspond to existing change directories.
+
+    Accepts either directory names or absolute/relative paths.
+    """
+    if project_root is None:
+        project_root = find_project_root()
+    changes = find_changes(project_root)
+    valid_names_set = {c["dir_name"] for c in changes}
+    path_to_name = {Path(c["path"]).resolve(): c["dir_name"] for c in changes}
+
     valid_names = []
     for d in dir_names:
-        if d in valid:
+        if d in valid_names_set:
             valid_names.append(d)
-        else:
-            print(f"Warning: '{d}' is not a valid change directory, skipping", file=sys.stderr)
+            continue
+        # Try resolving as a path
+        p = Path(d)
+        if not p.is_absolute():
+            p = project_root / p
+        if p.is_dir():
+            resolved = p.resolve()
+            if resolved in path_to_name:
+                valid_names.append(path_to_name[resolved])
+                continue
+        print(f"Warning: '{d}' is not a valid change directory, skipping", file=sys.stderr)
     return valid_names
 
 
