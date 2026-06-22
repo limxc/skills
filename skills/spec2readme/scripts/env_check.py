@@ -99,24 +99,26 @@ def install_chrome_for_mmdc(render_error: str = "") -> tuple[bool, str]:
                     pass
 
     if rev:
-        # Try chrome@<exact-version>, fall back to chrome@<major>
+        # puppeteer-core 24.x defaults to chrome-headless-shell; fall back to chrome
         revs_to_try = [rev]
         major = rev.split(".")[0] if "." in rev else rev
         if major != rev:
             revs_to_try.append(major)
 
+        # puppeteer-core 23+ defaults to chrome-headless-shell
         for try_rev in revs_to_try:
-            cmd = ["npx", "puppeteer", "browsers", "install", f"chrome@{try_rev}"]
-            try:
-                result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
-                if result.returncode == 0:
-                    exe_path = _find_browser_binary("chrome", try_rev)
-                    if exe_path:
-                        os.environ["PUPPETEER_EXECUTABLE_PATH"] = exe_path
-                    return True, f"installed chrome@{try_rev}"
-            except Exception:
-                continue
-        return False, f"chrome install failed for versions {revs_to_try}"
+            for browser in ["chrome-headless-shell", "chrome"]:
+                cmd = ["npx", "puppeteer", "browsers", "install", f"{browser}@{try_rev}"]
+                try:
+                    result = _run_npx(cmd, check=False, capture_output=True, text=True, timeout=120)
+                    if result.returncode == 0:
+                        exe_path = _find_browser_binary(browser, try_rev)
+                        if exe_path:
+                            os.environ["PUPPETEER_EXECUTABLE_PATH"] = exe_path
+                        return True, f"installed {browser}@{try_rev}"
+                except Exception:
+                    continue
+        return False, f"chrome-headless-shell/chrome install failed for versions {revs_to_try}"
 
     # Fallback: no revision found, install latest chrome-headless-shell
     cmd = ["npx", "puppeteer", "browsers", "install", "chrome-headless-shell"]
