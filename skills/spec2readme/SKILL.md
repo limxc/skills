@@ -43,7 +43,7 @@ Step 6  position 更新 + README 追加 + 回复
 
 运行：
 ```
-python <skill-dir>/scripts/check_openspec.py --try-parent
+python <skill-dir>/scripts/check_openspec.py
 ```
 
 - exit 0 → 继续。
@@ -298,7 +298,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 
 | 步骤 | 触发条件 | 一线修复 | 兜底 |
 |------|---------|---------|------|
-| Step 1 | openspec/ 不存在 / 依赖未安装 / Chrome 缺失 | 运行 `check_openspec.py` / `env_check.py`，按提示安装 | 提示终止或跳过配图 |
+| Step 1 | openspec/ 不存在 / 依赖未安装 / Chrome 缺失 | 运行 `check_openspec.py` / `env_check.py` 检查并按提示安装 | 提示终止或跳过配图 |
 | Step 2 | 无 pending changes / 缺 proposal.md | 提供 unskip 选项 / 询问用户是否跳过 | 终止或跳过继续 |
 | Step 3 | change 目录结构不完整 | 检查 `.openspec.yaml` 和 `created:` 字段 | 终止 |
 | Step 4 | creating-mermaid-diagrams 加载失败 / mmdc 校验失败 | 重新加载 / 修正 `.mmd` | 跳过该配图或全部配图 |
