@@ -261,13 +261,15 @@ python -c "from pathlib import Path; print(Path('$OUTPUT_FILE').resolve())"
 **6.1** position 更新：
 
 ```
-python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-N>
+python <skill-dir>/scripts/position.py processed <change-name-1> ... <change-name-N>
 ```
+
+`<change-name>` 为 change 目录名（如 `hqms-system-architecture-design`），不是绝对路径。若需从 `prepare_output.py` 的输出中提取，使用 `changeName` 字段。
 
 **6.2** 项目 README.md 追加：
 
 ```
-python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <change-dir-1>
+python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <change-name>
 ```
 
 `$OUTPUT_FILE` 为相对路径（由 `prepare_output.py` 保证），展示给用户时路径干净。`append_readme.py` 会自动将其转为相对于 `README.md` 的相对路径后写入链接，确保链接在项目内可移植。
@@ -283,7 +285,7 @@ python <skill-dir>/scripts/cleanup_mmd.py $MMD_DIR
 
 如果 `position.py processed` 失败（JSON 文件不可写）→ 输出失败原因，告知用户手动执行：
 ```
-python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
+python <skill-dir>/scripts/position.py processed <change-name-1> ... <change-name-N>
 ```
 
 如果 `append_readme.py` 失败（README.md 不可写或不存在）→ 输出失败原因，告知用户手动追加链接到 README.md 的 `## 项目文档` 节。
@@ -291,7 +293,7 @@ python <skill-dir>/scripts/position.py processed <dir-1> ... <dir-N>
 **6.4** 回复用户（汇总）：
 - 标题：`{title}`
 - 文档路径：`$OUTPUT_FILE`
-- 覆盖 N 个 changes：`{dir-1}`, `{dir-2}`
+- 覆盖 N 个 changes：`{change-name-1}`, `{change-name-2}`
 - Mermaid 图表：N 个（flowchart / sequence / ...）
 - ✅ position 已更新（或 ❌ 需手动执行）
 - ✅ README.md 项目文档已追加（或 ❌ 需手动追加）
