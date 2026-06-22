@@ -20,16 +20,8 @@ import json
 import sys
 from pathlib import Path
 
-from get_change_date import get_change_date, resolve_change_path
-
-
-def find_project_root() -> Path:
-    """Locate project root by walking up from cwd."""
-    cwd = Path.cwd().resolve()
-    for parent in [cwd, *cwd.parents]:
-        if (parent / "openspec").is_dir() or (parent / ".git").is_dir():
-            return parent
-    return cwd
+from get_change_date import get_change_date
+from utils import find_project_root, resolve_change_path
 
 
 def main() -> int:

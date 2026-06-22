@@ -10,12 +10,13 @@ Position file: <project-root>/spec2readme/.spec2readme-position.json
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
+
+from utils import find_project_root
 
 
 @dataclass
@@ -25,28 +26,9 @@ class Position:
     updated_at: Optional[str] = None
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-SKILL_DIR = SCRIPT_DIR.parent
-
-
-def _find_project_root() -> Path:
-    env_root = os.environ.get("SPEC2README_PROJECT_ROOT")
-    if env_root:
-        return Path(env_root).resolve()
-    cwd = Path.cwd().resolve()
-    for path in [cwd, *cwd.parents]:
-        if (
-            (path / "openspec").is_dir()
-            or (path / ".git").is_dir()
-            or (path / "AGENTS.md").is_file()
-        ):
-            return path
-    return cwd
-
-
 def get_position_path(project_root: Optional[Path] = None) -> Path:
     if project_root is None:
-        project_root = _find_project_root()
+        project_root = find_project_root()
     return project_root / "spec2readme" / ".spec2readme-position.json"
 
 
@@ -71,24 +53,38 @@ def write_position(position: Position, project_root: Optional[Path] = None) -> N
     )
 
 
-def mark_processed(dir_names: list[str], project_root: Optional[Path] = None) -> Position:
-    pos = read_position(project_root)
+def _filter_valid_dir_names(dir_names: list[str], project_root: Optional[Path] = None) -> list[str]:
+    """Return only dir_names that correspond to existing change directories."""
+    valid = {c["dir_name"] for c in find_changes(project_root)}
+    valid_names = []
     for d in dir_names:
+        if d in valid:
+            valid_names.append(d)
+        else:
+            print(f"Warning: '{d}' is not a valid change directory, skipping", file=sys.stderr)
+    return valid_names
+
+
+def mark_processed(dir_names: list[str], project_root: Optional[Path] = None) -> tuple[Position, list[str]]:
+    valid_names = _filter_valid_dir_names(dir_names, project_root)
+    pos = read_position(project_root)
+    for d in valid_names:
         if d not in pos.processed:
             pos.processed.append(d)
         pos.skipped = [s for s in pos.skipped if s != d]
     write_position(pos, project_root)
-    return pos
+    return pos, valid_names
 
 
-def mark_skipped(dir_names: list[str], project_root: Optional[Path] = None) -> Position:
+def mark_skipped(dir_names: list[str], project_root: Optional[Path] = None) -> tuple[Position, list[str]]:
+    valid_names = _filter_valid_dir_names(dir_names, project_root)
     pos = read_position(project_root)
-    for d in dir_names:
+    for d in valid_names:
         if d not in pos.skipped:
             pos.skipped.append(d)
         pos.processed = [p for p in pos.processed if p != d]
     write_position(pos, project_root)
-    return pos
+    return pos, valid_names
 
 
 def reset_position(project_root: Optional[Path] = None) -> None:
@@ -105,7 +101,7 @@ def unskip_changes(dir_names: list[str], project_root: Optional[Path] = None) ->
 
 def find_changes(project_root: Optional[Path] = None) -> list[dict]:
     if project_root is None:
-        project_root = _find_project_root()
+        project_root = find_project_root()
 
     changes_dir = project_root / "openspec" / "changes"
     if not changes_dir.is_dir():
@@ -189,7 +185,7 @@ def main():
     args = parser.parse_args()
 
     if args.print_root:
-        print(str(_find_project_root()))
+        print(str(find_project_root()))
         return
 
     if not args.command:
@@ -219,12 +215,12 @@ def main():
             print(f"  {c['dir_name']}")
 
     elif args.command == "processed":
-        pos = mark_processed(args.dir_names)
-        print(f"Processed {len(args.dir_names)} change(s).")
+        pos, valid_names = mark_processed(args.dir_names)
+        print(f"Processed {len(valid_names)} change(s).")
 
     elif args.command == "skipped":
-        pos = mark_skipped(args.dir_names)
-        print(f"Skipped {len(args.dir_names)} change(s).")
+        pos, valid_names = mark_skipped(args.dir_names)
+        print(f"Skipped {len(valid_names)} change(s).")
 
     elif args.command == "unskip":
         pos = unskip_changes(args.dir_names)

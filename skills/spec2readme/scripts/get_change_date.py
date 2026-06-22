@@ -10,14 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-
-def find_project_root() -> Path:
-    """Locate project root by walking up from cwd."""
-    cwd = Path.cwd().resolve()
-    for parent in [cwd, *cwd.parents]:
-        if (parent / "openspec").is_dir() or (parent / ".git").is_dir():
-            return parent
-    return cwd
+from utils import find_project_root, resolve_change_path
 
 
 def get_change_date(change_path: Path) -> str:
@@ -37,32 +30,13 @@ def get_change_date(change_path: Path) -> str:
     return ""
 
 
-def resolve_change_path(change_arg: str, project_root: Path | None = None) -> Path:
-    """Resolve a change path or directory name to an existing directory."""
-    change_path = Path(change_arg)
-    if change_path.is_dir():
-        return change_path.resolve()
-
-    if project_root is None:
-        project_root = find_project_root()
-
-    candidates = [
-        project_root / "openspec" / "changes" / change_arg,
-        project_root / "openspec" / "changes" / "archive" / change_arg,
-    ]
-    for cand in candidates:
-        if cand.is_dir():
-            return cand.resolve()
-    return change_path
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Get created date of an OpenSpec change")
     parser.add_argument("change", help="Change directory path or directory name")
     parser.add_argument("--project-root", help="Project root (optional)")
     args = parser.parse_args()
 
-    project_root = Path(args.project_root).resolve() if args.project_root else None
+    project_root = Path(args.project_root).resolve() if args.project_root else find_project_root()
     change_path = resolve_change_path(args.change, project_root)
     if not change_path.is_dir():
         print(f"Change directory not found: {args.change}", file=sys.stderr)

@@ -13,23 +13,12 @@ openspec/changes/ or openspec/changes/archive/.
 Entry date comes from the change directory's .openspec.yaml `created:` field.
 """
 
-import os
 import re
 import sys
 from pathlib import Path
 
-from get_change_date import get_change_date, resolve_change_path
-
-
-def find_project_root() -> Path:
-    root_override = Path(os.environ.get("SPEC2README_PROJECT_ROOT", ""))
-    if root_override.is_dir():
-        return root_override.resolve()
-    cwd = Path.cwd().resolve()
-    for parent in [cwd] + list(cwd.parents):
-        if (parent / ".git").is_dir() or (parent / "openspec").is_dir():
-            return parent
-    return cwd
+from get_change_date import get_change_date
+from utils import find_project_root, resolve_change_path
 
 
 def main():
