@@ -213,7 +213,7 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 **4.2.2** 配图类型推荐与确认
 
-将 4.2.1 产出的完整 prompt 逐项用 question 确认用户选择（注意：prompt 已可直接使用，无需再套模板）：
+将 4.2.1 产出的完整 prompt 逐项用 question 确认用户选择：
 ```
 方向：系统架构, 推荐：flowchart
 完整 prompt: "画一个微服务电商架构图，包含 Mobile/Web 客户端、API 网关、User/Order/Product/Payment 服务，以及 User DB / Order DB / Product DB / Redis Cache"
