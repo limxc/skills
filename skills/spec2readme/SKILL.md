@@ -270,6 +270,8 @@ python <skill-dir>/scripts/position.py processed <change-dir-1> ... <change-dir-
 python <skill-dir>/scripts/append_readme.py <project-root> "<final-title>" $OUTPUT_FILE <change-dir-1>
 ```
 
+`$OUTPUT_FILE` 为相对路径（由 `prepare_output.py` 保证），展示给用户时路径干净。`append_readme.py` 会自动将其转为相对于 `README.md` 的相对路径后写入链接，确保链接在项目内可移植。
+
 这会在 `README.md` 的 `## 项目文档` 节追加一条带日期的链接（日期取自 change 目录 `.openspec.yaml` 的 `created:` 字段）。无此节则自动创建。
 多 change 场景：只传入主 change 目录名，日期取自该 change 的 `created:` 字段（与 Step 3.2 一致）。
 

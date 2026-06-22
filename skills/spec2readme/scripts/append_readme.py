@@ -31,8 +31,17 @@ def main():
 
     project_root = Path(sys.argv[1]).resolve()
     title = sys.argv[2]
-    doc_relative = sys.argv[3]
+    doc_path = Path(sys.argv[3])
     change_arg = sys.argv[4]
+
+    # Ensure link is relative to README.md (project root)
+    if doc_path.is_absolute():
+        try:
+            doc_relative = doc_path.relative_to(project_root).as_posix()
+        except ValueError:
+            doc_relative = doc_path.as_posix()
+    else:
+        doc_relative = doc_path.as_posix()
 
     change_path = resolve_change_path(change_arg, project_root)
     date_str = get_change_date(change_path)
