@@ -199,41 +199,42 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 | 思维导图（mindmap） | "画一个关于 {主题} 的思维导图，展开 {分支1}/{分支2}/{分支3} 等子主题" 如："画一个关于微服务架构的思维导图，展开 服务拆分/通信方式/部署运维/监控告警 等子主题" |
 | 用户旅程（journey） | "画一个{用户角色}使用{系统}的旅程图：{阶段1}(评分:{情绪}) → {阶段2}(评分:{情绪}) → {阶段3}(评分:{情绪})" 如："画一个用户在线问诊的旅程图：注册(3) → 选择科室(4) → 支付(2) → 进入诊室(5) → 结束问诊(5)" |
 
-**4.2.1** 基于语义分析确定配图方向/角度
+**4.2.1** 基于语义分析确定配图方向并产出完整 prompt
 
-基于 Step 4.1 的 `change_material_summary`，对照 **Mermaid 配图表**找出所有可能需要配图的方向/角度。**每个方向同时产出 `content`**——从素材中提取该方向涉及的具体组件/实体/流程名称，拼接为一句配图内容描述（如 "User/Order/Product 服务经由 API Gateway 调用路线及它们依赖的 DB 和 Redis"），用于后续 prompt 模板填充。
+基于 Step 4.1 的 `change_material_summary`，对照 **Mermaid 配图表**的构造方式，为每个需要的配图方向**直接产出完整 prompt**（如 `"画一个{系统描述}架构图，包含{组件A}/{组件B}，展示它们之间的{调用/依赖}关系"`），而不是产出中间态 content。
 
-输出格式：`方向名 + content`，全部进入 4.2.2。
+产出格式：`方向名 + 推荐类型 + 完整 prompt`，全部进入 4.2.2。
 
 **规则**：
 - 分析出的方向全部进入 4.2.2 展示
-- 方向 > 5 时，按以下优先级裁剪到 5 个：架构/系统流程图 > C4 上下文 > 时序图 > 数据模型 > 状态机 > 类图 > 其他。优先级低的先裁，同优先级保留 content 更具体的。
+- 方向 > 5 时，按以下优先级裁剪到 5 个：架构/系统流程图 > C4 上下文 > 时序图 > 数据模型 > 状态机 > 类图 > 其他。优先级低的先裁，同优先级保留 prompt 信息更具体的。
 - 未分析出任何方向 → 直接进入 Step 5（纯文字）
 - 若分析出的方向与素材内容明显不符（如数据库迁移 change 配了饼图而非 ER 图），返回 Step 4.1 重新审视素材描述是否充分；仍无法匹配则跳过配图直接进入 Step 5 纯文字模式
 
 **4.2.2** 配图类型推荐与确认
 
-根据 4.2.1 分析出的方向清单及其 `content`，结合**Mermaid 配图表**为每个方向推荐图表类型。
-
-**必须**对每个方向用 question 确认用户选择：
+将 4.2.1 产出的完整 prompt 逐项用 question 确认用户选择（注意：prompt 已可直接使用，无需再套模板）：
 ```
-方向：系统架构, 内容： `content`
-A) 推荐：flowchart —— 理由：...
-B) 备选：C4Context —— 理由：...
+方向：系统架构, 推荐：flowchart
+完整 prompt: "画一个微服务电商架构图，包含 Mobile/Web 客户端、API 网关、User/Order/Product/Payment 服务，以及 User DB / Order DB / Product DB / Redis Cache"
+A) 采用
+B) 修改 prompt（请提供修改内容）
 C) 跳过
 
-方向：数据模型, 内容： `content`
-A) 推荐：erDiagram —— 理由：...
-B) 跳过
+方向：登录流程, 推荐：sequenceDiagram
+完整 prompt: "画一个 JWT 登录的时序图：Client 把账号密码发给 API Gateway，Gateway 调 Auth Service，Auth Service 查 User DB 校验密码哈希，然后把签名 JWT 沿路径返回 Client。同时画出密码错误的失败分支"
+A) 采用
+B) 修改 prompt
+C) 跳过
 ```
 
-**🔴 CHECKPOINT — 配图方向和类型已确认。进入 Step 4.3 后将按当前选择生成 mermaid 源码，返回修改需重新确认。**
+选择 B 修改 prompt 时，收集用户修改后替换为该方向的新 prompt。
+
+**🔴 CHECKPOINT — 配图方向和 prompt 已确认。进入 Step 4.3 后将直接按当前 prompt 生成 mermaid 源码，返回修改需重新确认。**
 
 **4.3** 加载 creating-mermaid-diagrams skill 生成配图源码
 
-通过 skill 工具加载 `creating-mermaid-diagrams`，然后对 4.2.2 中用户确认的每个配图项逐一构造 prompt 请求生成。
-
-用户在 4.2.2 中确认的每个配图项都包含 `content` 字段（如 "微服务电商架构：Mobile/Web → API Gateway → User/Order/Product/Payment 服务 → DB + Redis"），这是**内容描述**，不是完整 prompt。需要将其**嵌入对应类型的 prompt 模板**（**Mermaid 配图表**的构造方式），形成完整 prompt 后再发给 `creating-mermaid-diagrams`。关键是**具体描述组件/实体名称、流向/关系、边界/分支**。
+通过 skill 工具加载 `creating-mermaid-diagrams`，然后将 4.2.2 中用户确认的**完整 prompt 直接作为请求内容**发送——无需再套模板，prompt 已在 4.2.1 按 Mermaid 配图表格式构造完成。
 
 在生成配图时，指定输出目录为 `$MMD_DIR`，让 creating-mermaid-diagrams skill 将 `.mmd` 文件写在此目录下。如果该 skill 的输出报告返回了文件路径，则从中读取 `.mmd` 内容；否则直接从 `$MMD_DIR` 下读取生成的 `.mmd` 文件。
 
@@ -339,7 +340,7 @@ python <skill-dir>/scripts/cleanup_mmd.py $MMD_DIR
 | 6 | 文档堆砌 tasks.md 逐条列表 | 读者看到的是任务清单而不是技术叙事，可读性差 | 遵循 Step 5.1 原则：Why 先行 + What 用列表提炼 + Impact 单独标注 |
 | 7 | 配图堆在文档开头或末尾 | 图文脱节，读者需要来回翻 | 遵循 Step 5.1 原则：配图紧跟相关段落，一处内容一张图 |
 | 8 | 用户说"修改"时用 question 工具 | question 弹窗不适合多轮修改对话，用户无法自然表达修改意图 | Step 5.2 明确规定了用直接对话，不得使用 question 工具 |
-| 9 | 4.3 将 content 字段不经模板包装直接作为 prompt 发送 | creating-mermaid-diagrams 收到残缺指令（如只有组件列表没有"画一个..."），生成无关或空图表 | 必须将 content 嵌入对应类型的 prompt 模板（如"画一个...架构图，包含..."），形成完整 prompt 后再发送 |
+| 9 | 4.3 跳过 4.2.1 的完整 prompt 构造，在 4.3 临时拼 prompt | 4.3 没有素材上下文，拼出的 prompt 缺组件名/流向/边界，生成无关或空图表 | 4.2.1 必须产出完整 prompt，4.3 只做透传，不再做模板嵌入 |
 | 10 | 多个 change 不合并素材，逐 change 分别推荐给 creating-mermaid-diagrams | 同一模块在不同 change 中出现矛盾配图（如 change A 用 MySQL、change B 改为 PostgreSQL，分别生成两套冲突的 ER 图） | 4.1 必须将所有 change 合并为一份 `change_material_summary`，让模型看到完整叙事和最终态 |
 
 ## 脚本
