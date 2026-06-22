@@ -201,7 +201,7 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 **4.2.1** 基于语义分析确定配图方向并产出完整 prompt
 
-基于 Step 4.1 的 `change_material_summary`，对照 **Mermaid 配图表**的构造方式，为每个需要的配图方向**直接产出完整 prompt**（如 `"画一个{系统描述}架构图，包含{组件A}/{组件B}，展示它们之间的{调用/依赖}关系"`），而不是产出中间态 content。
+基于 Step 4.1 的 `change_material_summary`，对照 **Mermaid 配图表**的构造方式，为每个需要的配图方向**直接产出完整 prompt**（如 `"画一个{系统描述}架构图，包含{组件A}/{组件B}，展示它们之间的{调用/依赖}关系"`）。
 
 产出格式：`方向名 + 推荐类型 + 完整 prompt`，全部进入 4.2.2。
 
