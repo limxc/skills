@@ -217,12 +217,12 @@ python <skill-dir>/scripts/prepare_output.py <主-change-name>
 
 **必须**对每个方向用 question 确认用户选择：
 ```
-方向：系统架构, content："展示 {组件列表} 的调用依赖关系"
+方向：系统架构, 内容： `content`
 A) 推荐：flowchart —— 理由：...
 B) 备选：C4Context —— 理由：...
 C) 跳过
 
-方向：数据模型, content："展示 {实体列表} 的 ER 关系和外键约束"
+方向：数据模型, 内容： `content`
 A) 推荐：erDiagram —— 理由：...
 B) 跳过
 ```
